@@ -71,6 +71,7 @@
     <Compile Include="Crawler\DataStore.cs" />
     <Compile Include="Crawler\DateParser.cs" />
     <Compile Include="Crawler\EventTagParser.cs" />
+    <Compile Include="Crawler\GoogleScholar.cs" />
     <Compile Include="Crawler\PagesCrawler.cs" />
     <Compile Include="Crawler\ParseSingle.cs" />
     <Compile Include="Crawler\TagStructure.cs" />

@@ -154,6 +154,7 @@ namespace get_wikicfp2012.Crawler
                         request.Method = "HEAD";
                         request.AllowAutoRedirect = false;
                         request.Timeout = 1000 * 60;
+                        request.UserAgent = "Mozilla/5.0 (Windows NT 6.1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/41.0.2228.0 Safari/537.36";
 
                         string location, statusCode, contentType;
                         using (var response = request.GetResponse() as HttpWebResponse)

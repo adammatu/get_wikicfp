@@ -42,9 +42,11 @@ namespace get_wikicfp2012
                 // update conference links
                 //.UpdateLinks()
                 ;
-
-            new CFPCrawler().CrawlList("http://www.wikicfp.com","/cfp/allcat");
-            new CFPFilePaser().ScanNames(Program.CACHE_ROOT + "rfp");            
+            
+            // get conferences from wiki cfp
+            //new CFPCrawler().CrawlList("http://www.wikicfp.com","/cfp/allcat");
+            // parse conferences
+            //new CFPFilePaser().ScanNames(Program.CACHE_ROOT + "rfp");            
 
 
             new PagesCrawler()
@@ -213,6 +215,12 @@ namespace get_wikicfp2012
                 //.Close()
                 ;
               
+            //Google Scholar citation count test
+            new GoogleScholar()
+                .LoadWords()
+                .GetAll(10000, 5)
+                ;
+
             Console.WriteLine("END");
             Console.ReadKey();           
         }
