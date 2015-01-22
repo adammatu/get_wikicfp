@@ -9,8 +9,6 @@ using System.Threading;
 
 namespace get_wikicfp2012.Crawler
 {
-    enum PagesCrawlerOptions { Threaded};
-
     class PagesCrawler
     {
         List<CFPFilePaserItem> items = new List<CFPFilePaserItem>();
@@ -19,8 +17,7 @@ namespace get_wikicfp2012.Crawler
         string output;
         object outputLock = new object();
         string newConfFile;
-        string newConfFile3;
-        PagesCrawlerOptions currentOptions;        
+        string newConfFile3;        
         List<Thread> threads = new List<Thread>();
         DateTime start = DateTime.Now;
         int threadsStarted = 0;
@@ -105,26 +102,22 @@ namespace get_wikicfp2012.Crawler
             return this;
         }
 
-        public PagesCrawler Action(PagesCrawlerOptions options)
+        public PagesCrawler Action()
         {
-            if (options == PagesCrawlerOptions.Threaded)
+            if (Program.LOAD_SQL)
             {
-                if (Program.LOAD_SQL)
-                {
-                    ParseSingle.storage.Initialize();
-                }
-                CommitteeTagParser.Init();
-                List<CFPFilePaserItem> itemsCopy = new List<CFPFilePaserItem>();                
-                itemsCopy = new List<CFPFilePaserItem>();
-                itemsCopy.AddRange(items);
-                foreach (CFPFilePaserItem item in itemsCopy)
-                {
-                    RunInThreads(ParseEvent, item);
-                    Thread.Sleep(500);
-                }
-                WaitForThreads();
-                return this;
+                ParseSingle.storage.Initialize();
             }
+            CommitteeTagParser.Init();
+            List<CFPFilePaserItem> itemsCopy = new List<CFPFilePaserItem>();
+            itemsCopy = new List<CFPFilePaserItem>();
+            itemsCopy.AddRange(items);
+            foreach (CFPFilePaserItem item in itemsCopy)
+            {
+                RunInThreads(ParseEvent, item);
+                Thread.Sleep(500);
+            }
+            WaitForThreads();
             return this;
         }
 

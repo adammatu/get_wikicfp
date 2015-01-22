@@ -63,6 +63,8 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Crawler\CFPCrawler.cs" />
+    <Compile Include="Crawler\CFPFilePaser.cs" />
     <Compile Include="Crawler\CFPFilePaserItem.cs" />
     <Compile Include="Crawler\CFPStorageData.cs" />
     <Compile Include="Crawler\CommitteeTagParser.cs" />

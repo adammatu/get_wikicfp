@@ -16,23 +16,54 @@ namespace get_wikicfp2012
 {
     class Program
     {
+        // connection string to MSSQL database
+        // script in database folder 
         public const string CONNECTION_STRING = @"Data Source=OSTRICH\SQLEXPRESS;Database=dbScience2;Integrated Security=SSPI;Connect Timeout=0";
+
+        //root for local web-cache, temporary files and result files
         public const string CACHE_ROOT = @"D:\work\phd\!\";
+
+        // thread count for page crawler
         public const int THREAD_COUNT = 5;
+
+        // preload SQL wile crawling
         public const bool LOAD_SQL = false;
 
         static void Main(string[] args)
         {
+            // steps can be switched off by sommenting out function lines (starting with dot '.')
+            // constructor lines must be left in place (staring with new)
+
             new Parser()
+                // parse DBLP
                 //.ParseConf(@"D:\work\phd\dblp\dblp_bht.xml")
+                // parse ArNetMiner citation
                 //.ParseCite(@"D:\work\phd\dblp_arnetminer\acm_output.txt")
+                // update conference links
                 //.UpdateLinks()
                 ;
 
+            new CFPCrawler().CrawlList("http://www.wikicfp.com","/cfp/allcat");
+            new CFPFilePaser().ScanNames(Program.CACHE_ROOT + "rfp");            
+
+
+            new PagesCrawler()
+                // parse found URLs files
+                .ParseFile("cfp2\\list.csv", "cfp2\\output.csv", false)
+                // clear list of visited pages
+                // .ClearVisited()
+                // scan
+                // .Action()
+                ;
+
             new OpiCrawler()
+                // Init DB connetion
                 //.Connect()
+                // Scan OPI to select Polish subset
                 //.ScanOPI("opi\\ludzieNauki")
+                // Match names to existing
                 //.MatchNames()
+                // Close DB connection
                 //.Close()
                 ;
             //CL
