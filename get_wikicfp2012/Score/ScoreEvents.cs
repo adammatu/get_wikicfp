@@ -148,11 +148,7 @@ namespace get_wikicfp2012.Score
                     double transfer = 0.01379;
                     double weightedScore = (1.0 + (linkScore - 1.0) * transfer) * strength;
                     score += weightedScore;
-                }
-                if (score == 0)
-                {
-                    int k = 1;
-                }
+                }              
                 ev.Score = score;
             }
             Console.WriteLine("Events done");

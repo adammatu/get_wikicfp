@@ -9,6 +9,8 @@ using System.Threading;
 
 namespace get_wikicfp2012.Crawler
 {
+    enum PagesCrawlerOptions { None, SingleThreaded, PastEvents };
+
     class PagesCrawler
     {
         List<CFPFilePaserItem> items = new List<CFPFilePaserItem>();
@@ -102,22 +104,51 @@ namespace get_wikicfp2012.Crawler
             return this;
         }
 
-        public PagesCrawler Action()
+        public PagesCrawler Action(PagesCrawlerOptions action)
         {
-            if (Program.LOAD_SQL)
+            ClearVisited();
+            switch (action)
             {
-                ParseSingle.storage.Initialize();
+                case PagesCrawlerOptions.PastEvents:
+                    {
+                        List<CFPFilePaserItem> itemsCopy = new List<CFPFilePaserItem>();
+                        itemsCopy.AddRange(items);
+                        foreach (CFPFilePaserItem item in itemsCopy)
+                        {
+                            if (item.List == 1)
+                            {
+                                RunInThreads(findPastEventsAndStoreUrlTest, item);
+                            }
+                        }
+                        WaitForThreads();
+                        itemsCopy = new List<CFPFilePaserItem>();
+                        itemsCopy.AddRange(items);
+                        foreach (CFPFilePaserItem item in itemsCopy)
+                        {
+                            RunInThreads(findPastEventsAndStore, item);
+                        }
+                        WaitForThreads();
+                        break;
+                    }
+                case PagesCrawlerOptions.SingleThreaded:
+                    {
+                        if (Program.LOAD_SQL)
+                        {
+                            ParseSingle.storage.Initialize();
+                        }
+                        CommitteeTagParser.Init();
+                        List<CFPFilePaserItem> itemsCopy = new List<CFPFilePaserItem>();
+                        itemsCopy = new List<CFPFilePaserItem>();
+                        itemsCopy.AddRange(items);
+                        foreach (CFPFilePaserItem item in itemsCopy)
+                        {
+                            RunInThreads(ParseEvent, item);
+                            Thread.Sleep(500);
+                        }
+                        WaitForThreads();
+                        break;
+                    }
             }
-            CommitteeTagParser.Init();
-            List<CFPFilePaserItem> itemsCopy = new List<CFPFilePaserItem>();
-            itemsCopy = new List<CFPFilePaserItem>();
-            itemsCopy.AddRange(items);
-            foreach (CFPFilePaserItem item in itemsCopy)
-            {
-                RunInThreads(ParseEvent, item);
-                Thread.Sleep(500);
-            }
-            WaitForThreads();
             return this;
         }
 
@@ -187,6 +218,137 @@ namespace get_wikicfp2012.Crawler
             CFPFilePaserItem item = (CFPFilePaserItem)_item;
             Console.WriteLine("reading: " + item.ID);
             new ParseSingle(item).Run();
+        }
+
+        public void findPastEventsAndStoreUrlTest(object _item)
+        {
+            CFPFilePaserItem item = (CFPFilePaserItem)_item;
+            foreach (CFPFilePaserItem newItem in findPastEvents(item, true))
+            {
+                StoreCFP(newItem, 2);
+            }
+        }
+
+        public void findPastEventsAndStore(object _item)
+        {
+            CFPFilePaserItem item = (CFPFilePaserItem)_item;
+            foreach (CFPFilePaserItem newItem in findPastEvents(item, false))
+            {
+                StoreCFP(newItem, 3);
+            }
+        }
+
+        public List<CFPFilePaserItem> findPastEvents(CFPFilePaserItem item, bool urlTest)
+        {
+            List<CFPFilePaserItem> result = new List<CFPFilePaserItem>();
+            Console.WriteLine("reading: " + item.ID);
+
+            if (!input.IsCached(item.Link))
+            {
+                return result;
+            }
+            string url = item.Link;
+            Dictionary<string, string> text = input.GetPage(ref url);
+            if (text.Count == 0)
+            {
+                return result;
+            }
+            foreach (string location in text.Keys)
+            {
+                /*
+                DateTime date = DateParser.findDate(text, item.ID);
+                Console.WriteLine("{0:yyyy.MM.dd}", date);
+                 */
+                // good code  :)))
+                if (urlTest)
+                {
+                    try
+                    {
+                        Regex yearMatch = new Regex("[0-9]{4}");
+                        string yearConf = Convert.ToInt32(yearMatch.Match(item.ID).Value).ToString();
+                        if (item.Link.Contains(yearConf))
+                        {
+                            for (int year = 2014, notFound = 0; (year > 1990) && (notFound < 4); year--)
+                            {
+                                string urlYear = item.Link.Replace(yearConf, year.ToString());
+                                string newText = input.GetPageCombined(ref urlYear, WebInputOptions.IncludeVisited);
+                                if (newText == "")
+                                {
+                                    notFound++;
+                                }
+                                else
+                                {
+                                    result.Add(new CFPFilePaserItem
+                                    {
+                                        ID = item.ID.Replace(yearConf, year.ToString()),
+                                        Link = urlYear,
+                                        Name = item.Name.Replace(yearConf, year.ToString())
+                                    });
+                                    notFound = 0;
+                                    Console.WriteLine("Found {0}", year);
+                                }
+                            }
+                        }
+                    }
+                    catch
+                    {
+                    }
+                }
+                else
+                {
+                    getEventsData(item, item.Link);
+                    Dictionary<string, string> urls = ParseSingle.parser.ListUrls(location, text[location]);
+                    foreach (string _newUrl in urls.Keys)
+                    {
+                        string newUrl = _newUrl;
+                        string name = urls[newUrl].ToLower();
+                        foreach (string w in EventTagParser.eventsWords)
+                        {
+                            if (name.Contains(w))
+                            {
+                                Dictionary<string, string> pastEventsPage = input.GetPage(ref newUrl);
+                                foreach (string newPage in pastEventsPage.Keys)
+                                {
+                                    result.AddRange(getEventsData(item, newPage));
+                                    DateParser.countResults[2]++;
+                                }
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
+            Console.WriteLine("cc:{0} cr:{1} cp:{2}", DateParser.countResults[0], DateParser.countResults[1], DateParser.countResults[2]);
+            return result;
+        }
+
+        public List<CFPFilePaserItem> getEventsData(CFPFilePaserItem item, string url)
+        {
+            //
+            lock (outputLock)
+            {
+                using (StreamWriter sw = File.AppendText(output))
+                {
+                    sw.WriteLine(item.ID + " " + url);
+                }
+            }
+            //
+            List<CFPFilePaserItem> result = new List<CFPFilePaserItem>();
+            Dictionary<string, string> text = ParseSingle.input.GetPage(ref url, WebInputOptions.IncludeVisited);
+            foreach (string location in text.Keys)
+            {
+                result.AddRange(EventTagParser.ParseEvents(text[location], item.ID, location, output, outputLock));
+            }
+            //
+            lock (outputLock)
+            {
+                using (StreamWriter sw = File.AppendText(output))
+                {
+                    sw.WriteLine("----");
+                }
+            }
+            //
+            return result;
         }
     }
 }

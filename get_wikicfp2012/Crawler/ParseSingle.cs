@@ -8,8 +8,8 @@ namespace get_wikicfp2012.Crawler
     public class ParseSingle
     {
         private CFPFilePaserItem item;
-        static WebInput input = new WebInput();
-        static UrlParser parser = new UrlParser();
+        public static WebInput input = new WebInput();
+        public static UrlParser parser = new UrlParser();
         public static CFPStorageData storage = new CFPStorageData();
 
         public ParseSingle(CFPFilePaserItem item)

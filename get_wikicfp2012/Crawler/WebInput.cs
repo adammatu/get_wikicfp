@@ -9,9 +9,9 @@ using System.Net;
 namespace get_wikicfp2012.Crawler
 {
     [Flags]
-    enum WebInputOptions { None=0,IncludeVisited=1,ForceDownload=2 }
+    public enum WebInputOptions { None=0,IncludeVisited=1,ForceDownload=2 }
 
-    class WebInput
+    public class WebInput
     {
         List<string> visitedPages = new List<string>();
         static object visitedLock = new object();

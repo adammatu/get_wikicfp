@@ -50,10 +50,11 @@ namespace get_wikicfp2012
             new PagesCrawler()
                 // parse found URLs files
                 .ParseFile("cfp2\\list.csv", "cfp2\\output.csv", false)
-                // clear list of visited pages
-                // .ClearVisited()
-                // scan
-                // .Action()
+                // clear list of visited pages                
+                // scan past events link
+                .Action(PagesCrawlerOptions.PastEvents)
+                // scan conference pages
+                .Action(PagesCrawlerOptions.SingleThreaded)
                 ;
 
             new OpiCrawler()
@@ -66,28 +67,34 @@ namespace get_wikicfp2012
                 // Close DB connection
                 //.Close()
                 ;
-            //CL
+
+            //Career line - obsolete
+            /*
             new CareerLine()
-                //.CrawlerFirst()
-                //.CountLengths()
-                //.LimitSets(0)
-                //.LimitSets(1)
-                //.LimitSets(2)
+                .CrawlerFirst()
+                .CountLengths()
+                .LimitSets(0)
+                .LimitSets(1)
+                .LimitSets(2)
                 ;
-            //
+            */
 
-            //Tri
-
+            //Triads
             new Triangles()
+                // read data
                 //.ScanLinks()
+                // links between people
                 //.EventToPerson()
+                //count triads in (-1 - all, 0 - all but Poland, 1 - Poland)
                 //.CountTypes(-1)
                 //.CountTypes(0)
                 //.CountTypes(1)
+                // get triad creation stats
                 //.GetStats(-1)
                 //.GetStats(0)
                 //.GetStats(1)
 
+                /* OBSOLETE
                 //.Betweenness(1,0)
                 //.BetweennessStat(1,0)
                 //.Betweenness(1,1)
@@ -98,6 +105,7 @@ namespace get_wikicfp2012
                 //.FakeEventToPerson()
                 //.Betweenness(-1, 10)
                 //.BetweennessStat(-1, 10)
+                */
             ;
 
             /*
@@ -114,61 +122,94 @@ namespace get_wikicfp2012
                 .Action(PagesCrawlerOptions.Threaded);
             */
 
+            // export dabatase data to csv
             new ExportCSV()
+                // init
                 //.Open()
-                //.Store("csv", 0)
+                // store data sample with cunt limit (0 - no limit)
+                //.Store(Program.CACHE_ROOT+"csv", 0)
+                // count committee size stats
                 //.CountCommitteeSizes()
+                // close
                 //.Close()
                 ;
-            
+
             /*
             new ConditionalProbability()
+                // prepare phase one
                 .Prepare()
+                // prepare phase two
                 .Prepare2()
+                // calculate 
                 .CalculateAll()
                 ;
              */
-            /*
+
+
             new ConditionalGroups()
+                // init
                 .Open()
+                // read events from databae to file
                 //.ReadEvents()
+                // identify event reasons
                 //.IdentifyReasons()                
+                // collect reason stats and save
                 .Collect()
+                // close
                 .Close()
                 ;
-            
-             */
 
-            /* OLD ???
+            /*
+            // deprecated object score
             new ScoreObjects()
                 .Prepare()
                 .CalculateAll()
                 ;
             */
-            
+
+            // calculate scores for people
             new ScorePeople()
+                // init
                 .Prepare()
+                // correlation test friendship transition probability based on year and number of connections
                 //.CalculateTranfers()
+                // calculate scores
                 //.CalculateAll()
+                // save scores to file 
                 //.SaveAll()
+                // import scores from file
                 //.BulkImport()
+                // TBC - calculate h index
                 .CalculateHIndex()
+                // TBC - save h index
                 .SaveHIndex()
+                // close
                 .Close()
                 ;            
            
+            // calculate career lines (scores based on years since career start)
             new ScoreCareerLine()
-                //.CrawlerFirst()
+                // get scores in years for people
+                .CrawlerFirst()
+                // groupping sets (min career length, max length considered, top classes to return, minimal coverage of top classes)
                 //.LimitSets(5, 20, 5, 0.99)
-                //.LimitSets()                
+                // groupping with default values
+                .LimitSets()                
                 ;
-           
+
+            // calculate sccore for events
             new ScoreEvents()
+                // init
                 //.Prepare()                
+                // calculate scores
                 //.CalculateAll()
-                //.SaveAll()                
+                // save scores
+                //.SaveAll()  
+                // calculate for year 2012
                 //.CalculateAllNow(2012)
+                // save results for selected year
                 //.SaveAllNow()                
+                // close
                 //.Close()
                 ;
               

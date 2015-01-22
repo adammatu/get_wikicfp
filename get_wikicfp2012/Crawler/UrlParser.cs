@@ -6,7 +6,7 @@ using System.Text.RegularExpressions;
 
 namespace get_wikicfp2012.Crawler
 {
-    class UrlParser
+    public class UrlParser
     {
         private static string[] skipExt = { "jpg", "jpeg", "png", "gif", "bmp", "pdf", "doc", "xls", "zip", "z", "tar", 
                                "gz", "rar", "wmv", "avi", "ps", "ppt", "mov", "avi", "mpg",

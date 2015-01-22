@@ -208,11 +208,7 @@ namespace get_wikicfp2012.Opi
                         result[0].ID);
                     command.CommandText = sql;
                     command.ExecuteNonQuery();
-                }
-                else
-                {
-                    int t = 0;
-                }
+                }             
             }
             return this;
         }
