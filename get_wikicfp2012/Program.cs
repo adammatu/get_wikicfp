@@ -49,12 +49,12 @@ namespace get_wikicfp2012
 
             new PagesCrawler()
                 // parse found URLs files
-                .ParseFile("cfp2\\list.csv", "cfp2\\output.csv", false)
+                //.ParseFile("cfp2\\list.csv", "cfp2\\output.csv", false)
                 // clear list of visited pages                
                 // scan past events link
-                .Action(PagesCrawlerOptions.PastEvents)
+                //.Action(PagesCrawlerOptions.PastEvents)
                 // scan conference pages
-                .Action(PagesCrawlerOptions.SingleThreaded)
+                //.Action(PagesCrawlerOptions.SingleThreaded)
                 ;
 
             new OpiCrawler()
@@ -148,15 +148,15 @@ namespace get_wikicfp2012
 
             new ConditionalGroups()
                 // init
-                .Open()
+                //.Open()
                 // read events from databae to file
                 //.ReadEvents()
                 // identify event reasons
                 //.IdentifyReasons()                
                 // collect reason stats and save
-                .Collect()
+                //.Collect()
                 // close
-                .Close()
+                //.Close()
                 ;
 
             /*
@@ -170,7 +170,7 @@ namespace get_wikicfp2012
             // calculate scores for people
             new ScorePeople()
                 // init
-                .Prepare()
+                //.Prepare()
                 // correlation test friendship transition probability based on year and number of connections
                 //.CalculateTranfers()
                 // calculate scores
@@ -180,21 +180,21 @@ namespace get_wikicfp2012
                 // import scores from file
                 //.BulkImport()
                 // TBC - calculate h index
-                .CalculateHIndex()
+                //.CalculateHIndex()
                 // TBC - save h index
-                .SaveHIndex()
+                //.SaveHIndex()
                 // close
-                .Close()
+                //.Close()
                 ;            
            
             // calculate career lines (scores based on years since career start)
             new ScoreCareerLine()
                 // get scores in years for people
-                .CrawlerFirst()
+                //.CrawlerFirst()
                 // groupping sets (min career length, max length considered, top classes to return, minimal coverage of top classes)
                 //.LimitSets(5, 20, 5, 0.99)
                 // groupping with default values
-                .LimitSets()                
+                //.LimitSets()                
                 ;
 
             // calculate sccore for events
