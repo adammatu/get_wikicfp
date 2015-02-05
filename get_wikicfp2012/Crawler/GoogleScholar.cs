@@ -45,48 +45,61 @@ namespace get_wikicfp2012.Crawler
         public GoogleScholar GetAll(int count, int pages)
         {
             Random r = new Random();
-            using (StreamWriter sw = File.AppendText(Program.CACHE_ROOT + "google\\output.txt"))
+            for (int n = 0; n < count; n++)
             {
-                for (int n = 0; n < count; n++)
+                string query = "";
+                foreach (List<string> words in allwords)
                 {
-                    string query = "";
-                    foreach (List<string> words in allwords)
+                    query = String.Format("{0} {1}", query, words[r.Next(words.Count)]);
+                }
+                query = query.Trim();
+                Console.WriteLine("reading: {0} ({1}%) {2}", n, (100 * n / count), query);
+                for (int page = 0; page < pages; page++)
+                {
+                    if (!GetSingle(query, page))
                     {
-                        query = String.Format("{0} {1}", query, words[r.Next(words.Count)]);
+                        Console.WriteLine("ERROR");
+                        return this;
                     }
-                    query = query.Trim();
-                    Console.WriteLine("reading: {0} ({1}%) {2}", n, (100*n/count), query);
-                    for (int page = 0; page < pages; page++)
-                    {
-                        GetSingle(query, page, sw);
-                        //qait
-                        Thread.Sleep(1000 * (10 + r.Next(20)));
-                    }
+                    //wait
+                    Thread.Sleep(1000 * (300 + r.Next(300)));
                 }
             }
             return this;
         }
 
-        private void GetSingle(string query, int page, StreamWriter sw)
+        private bool GetSingle(string query, int page, bool force = false)
         {
-            query = query.Replace(" ", "+");
-            string url = String.Format("http://scholar.google.pl/scholar?start={0}&q={1}&hl=en&as_sdt=0%2C5", page * PAGE_SIZE, query);
-            int count = 0;
-            foreach (string text in web.GetPage(ref url, WebInputOptions.IncludeVisited).Values)
+            if (force)
             {
-                foreach (Match match in citationRegex.Matches(text))
+                Console.WriteLine("force");
+            }
+            query = query.Replace(" ", "+");
+            string url = String.Format("https://scholar.google.com/scholar?start={0}&q={1}&hl=en&as_sdt=0%2C5", page * PAGE_SIZE, query);
+            int count = 0;
+            using (StreamWriter sw = File.AppendText(Program.CACHE_ROOT + "google\\output.txt"))
+            {
+                foreach (string text in web.GetPage(ref url, (force) ? WebInputOptions.ForceDownload : WebInputOptions.IncludeVisited).Values)
                 {
-                    if (match.Groups.Count != 5)
+                    foreach (Match match in citationRegex.Matches(text))
                     {
-                        continue;
+                        if (match.Groups.Count != 5)
+                        {
+                            continue;
+                        }
+                        string id = match.Groups[2].Value;
+                        string cite = match.Groups[4].Value;
+                        count++;
+                        sw.WriteLine("{0} {1} {2} {3}", query, id, page * PAGE_SIZE + count, cite);
                     }
-                    string id = match.Groups[2].Value;
-                    string cite = match.Groups[4].Value;
-                    count++;
-                    sw.WriteLine("{0} {1} {2} {3}", query, id, page * PAGE_SIZE+count, cite);
                 }
             }
             Console.WriteLine("found: {0}", count);
+            if ((!force) && (count == 0))
+            {
+                return GetSingle(query, page, true);
+            }
+            return count > 0;
         }
     }
 }
