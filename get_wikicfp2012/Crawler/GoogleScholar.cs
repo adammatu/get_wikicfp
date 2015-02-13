@@ -75,7 +75,10 @@ namespace get_wikicfp2012.Crawler
                 Console.WriteLine("force");
             }
             query = query.Replace(" ", "+");
-            string url = String.Format("https://scholar.google.com/scholar?start={0}&q={1}&hl=en&as_sdt=0%2C5", page * PAGE_SIZE, query);
+            string url = String.Format("https://scholar.google.com/scholar?{0}q={1}{2}&hl=en&as_sdt=0%2C5",
+                (page == 0) ? "" : String.Format("start={0}&", page * PAGE_SIZE), 
+                query,
+                (page==0)?"&btnG=":"");
             int count = 0;
             using (StreamWriter sw = File.AppendText(Program.CACHE_ROOT + "google\\output.txt"))
             {
