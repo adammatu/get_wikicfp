@@ -78,8 +78,10 @@
     <Compile Include="Crawler\UrlParser.cs" />
     <Compile Include="Crawler\WebInput.cs" />
     <Compile Include="Crawler\WebTools.cs" />
+    <Compile Include="DBLP\DataStoreDBLP.cs" />
     <Compile Include="DBLP\ParserCiteItem.cs" />
     <Compile Include="DBLP\Parser.cs" />
+    <Compile Include="DBLP\ParserDBLP.cs" />
     <Compile Include="Export\ExportCSV.cs" />
     <Compile Include="Opi\OpiCrawler.cs" />
     <Compile Include="ProbabilityGroups\ConditionalEvent.cs" />

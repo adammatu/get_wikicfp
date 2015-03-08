@@ -18,7 +18,7 @@ namespace get_wikicfp2012
     {
         // connection string to MSSQL database
         // script in database folder 
-        public const string CONNECTION_STRING = @"Data Source=OSTRICH\SQLEXPRESS;Database=dbScience2;Integrated Security=SSPI;Connect Timeout=0";
+        public const string CONNECTION_STRING = @"Data Source=OSTRICH\SQLEXPRESS;Database=dbScience3;Integrated Security=SSPI;Connect Timeout=0";
 
         //root for local web-cache, temporary files and result files
         public const string CACHE_ROOT = @"D:\work\phd\!\";
@@ -34,8 +34,17 @@ namespace get_wikicfp2012
             // steps can be switched off by sommenting out function lines (starting with dot '.')
             // constructor lines must be left in place (staring with new)
 
+
+
+            new ParserDBLP()
+                // parse DBLP 
+                //.Parse(@"D:\work\phd\dblp3\dblp.xml") // Step1
+                //.ParseConf(@"D:\work\phd\dblp3\dblp.xml") 
+                //.UpdateLinks() 
+                ;
+
             new Parser()
-                // parse DBLP
+                // parse DBLP Conf
                 //.ParseConf(@"D:\work\phd\dblp\dblp_bht.xml")
                 // parse ArNetMiner citation
                 //.ParseCite(@"D:\work\phd\dblp_arnetminer\acm_output.txt")
@@ -44,19 +53,20 @@ namespace get_wikicfp2012
                 ;
             
             // get conferences from wiki cfp
-            //new CFPCrawler().CrawlList("http://www.wikicfp.com","/cfp/allcat");
+            //new CFPCrawler().CrawlList("http://www.wikicfp.com","/cfp/allcat"); //Step2
             // parse conferences
-            //new CFPFilePaser().ScanNames(Program.CACHE_ROOT + "rfp");            
+            //new CFPFilePaser().ScanNames(Program.CACHE_ROOT + "rfp");  //Step3  
 
 
             new PagesCrawler()
                 // parse found URLs files
-                //.ParseFile("cfp2\\list.csv", "cfp2\\output.csv", false)
+                .ParseFile("cfp2\\list.csv", "cfp2\\output.csv", false) //Step4a, Step5a, Step6a
                 // clear list of visited pages                
                 // scan past events link
-                //.Action(PagesCrawlerOptions.PastEvents)
+                //.Action(PagesCrawlerOptions.PastEvents) //Step4b
+                //.Action(PagesCrawlerOptions.PastEvents2) //Step5b
                 // scan conference pages
-                //.Action(PagesCrawlerOptions.SingleThreaded)
+                .Action(PagesCrawlerOptions.SingleThreaded) //Step6b
                 ;
 
             new OpiCrawler()
@@ -217,8 +227,8 @@ namespace get_wikicfp2012
               
             //Google Scholar citation count test
             new GoogleScholar()
-                .LoadWords()
-                .GetAll(10000, 5)
+                //.LoadWords()
+                //.GetAll(10000, 5)
                 ;
 
             Console.WriteLine("END");

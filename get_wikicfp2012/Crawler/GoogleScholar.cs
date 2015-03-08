@@ -53,7 +53,7 @@ namespace get_wikicfp2012.Crawler
                     query = String.Format("{0} {1}", query, words[r.Next(words.Count)]);
                 }
                 query = query.Trim();
-                Console.WriteLine("reading: {0} ({1}%) {2}", n, (100 * n / count), query);
+                Console.WriteLine("reading: {0} ({1}%) {2}", n + 1, (100 * n / count), query);
                 for (int page = 0; page < pages; page++)
                 {
                     if (!GetSingle(query, page))

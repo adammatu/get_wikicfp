@@ -12,33 +12,32 @@ namespace get_wikicfp2012.Crawler
     {
         public static string GetPage(string url)
         {
-            /*
-            string text;
-            using (WebClient client = new WebClient())
+            try
             {
-                text = client.DownloadString(url);
-            }
-            return text;
-             */
-            StringBuilder result = new StringBuilder();
-            WebRequest req = WebRequest.Create(url);
-            req.Timeout = 60 * 1000;
-            using (Stream input = req.GetResponse().GetResponseStream())
-            {
-                using (StreamReader reader = new StreamReader(input))
+                StringBuilder result = new StringBuilder();
+                WebRequest req = WebRequest.Create(url);
+                req.Timeout = 60 * 1000;
+                using (Stream input = req.GetResponse().GetResponseStream())
                 {
-                    string line = "";
-                    while (line != null)
+                    using (StreamReader reader = new StreamReader(input))
                     {
-                        line = reader.ReadLine();
-                        if (line != null)
+                        string line = "";
+                        while (line != null)
                         {
-                            result.AppendLine(line);
+                            line = reader.ReadLine();
+                            if (line != null)
+                            {
+                                result.AppendLine(line);
+                            }
                         }
                     }
                 }
+                return result.ToString();
             }
-            return result.ToString();
+            catch
+            {
+                return "";
+            }
         }
 
         public static Dictionary<string, string> GetUrls(string text, string prefix)

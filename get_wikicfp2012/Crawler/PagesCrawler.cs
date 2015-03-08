@@ -9,7 +9,7 @@ using System.Threading;
 
 namespace get_wikicfp2012.Crawler
 {
-    enum PagesCrawlerOptions { None, SingleThreaded, PastEvents };
+    enum PagesCrawlerOptions { None, SingleThreaded, PastEvents, PastEvents2 };
 
     class PagesCrawler
     {
@@ -58,8 +58,8 @@ namespace get_wikicfp2012.Crawler
 
         public PagesCrawler ParseFile(string inputFile, string outputFile, bool skipNew)
         {
-            newConfFile = Path.ChangeExtension(inputFile, "2.csv");
-            newConfFile3 = Path.ChangeExtension(inputFile, "3.csv");
+            newConfFile = Program.CACHE_ROOT + Path.ChangeExtension(inputFile, "2.csv");
+            newConfFile3 = Program.CACHE_ROOT + Path.ChangeExtension(inputFile, "3.csv");
             output = Program.CACHE_ROOT + outputFile;
             //
             LoadFile(Program.CACHE_ROOT + inputFile, skipNew, 1);
@@ -120,12 +120,16 @@ namespace get_wikicfp2012.Crawler
                                 RunInThreads(findPastEventsAndStoreUrlTest, item);
                             }
                         }
-                        WaitForThreads();
-                        itemsCopy = new List<CFPFilePaserItem>();
+                        WaitForThreads();                        
+                        break;
+                    }
+                case PagesCrawlerOptions.PastEvents2:
+                    {
+                        List<CFPFilePaserItem> itemsCopy = new List<CFPFilePaserItem>();
                         itemsCopy.AddRange(items);
                         foreach (CFPFilePaserItem item in itemsCopy)
                         {
-                            RunInThreads(findPastEventsAndStore, item);
+                            findPastEventsAndStore(item);
                         }
                         WaitForThreads();
                         break;

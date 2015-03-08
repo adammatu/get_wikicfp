@@ -25,14 +25,18 @@ namespace get_wikicfp2012.Crawler
 
         public void CrawlCategory(string name, string domain, string url)
         {
+            if (Directory.Exists(Program.CACHE_ROOT + "rfp\\" + name))
+            {
+                Console.WriteLine("folder exists skipping");
+                return;
+            }
+            Directory.CreateDirectory(Program.CACHE_ROOT + "rfp\\" + name);            
             CrawlCategory(name, domain, url, 1);
         }
          
         public void CrawlCategory(string name, string domain, string url,int pageIndex)
-        {
-            
-            Console.WriteLine("page: " + pageIndex);
-            Directory.CreateDirectory(Program.CACHE_ROOT + "rfp\\" + name);            
+        {            
+            Console.WriteLine("page: " + pageIndex);            
             string pageUrl = (pageIndex == 1) ? url : (url + "&page=" + pageIndex);
             string text = WebTools.GetPage(domain + pageUrl);
             Dictionary<string, string> pages =
@@ -42,7 +46,7 @@ namespace get_wikicfp2012.Crawler
             foreach (string page in pages.Keys)
             {
                 Console.Write(page+", ");
-                CrawlPage(Program.CACHE_ROOT + "rfp\\" + name + "\\" + page + ".html", domain, pages[page]);
+                CrawlPage(Program.CACHE_ROOT + "rfp\\" + name + "\\" , page + ".html", domain, pages[page]);
             }
             Console.WriteLine();
             if (pageIndex == 20)
@@ -55,12 +59,8 @@ namespace get_wikicfp2012.Crawler
             }
         }
 
-        public void CrawlPage(string name, string domain, string url)
-        {            
-            int slash = name.IndexOf("\\");
-            slash = name.IndexOf("\\", slash + 1);
-            string namePrefix = name.Substring(0, slash + 1);
-            name = name.Substring(slash + 1);
+        public void CrawlPage(string namePrefix, string name, string domain, string url)
+        {                        
             foreach (char ch in Path.GetInvalidFileNameChars())
             {
                 name = name.Replace(ch, '_');
