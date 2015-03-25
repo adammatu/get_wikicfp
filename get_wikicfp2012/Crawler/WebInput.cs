@@ -69,7 +69,12 @@ namespace get_wikicfp2012.Crawler
 
         public Dictionary<string, string> GetPage(ref string url, WebInputOptions options)
         {
-            Dictionary<string, string> text = GetSinglePage(ref url, options);
+            return GetPage(ref url, new List<string>(), options);
+        }
+
+        private Dictionary<string, string> GetPage(ref string url, List<string> visited, WebInputOptions options)
+        {
+            Dictionary<string, string> text = GetSinglePage(ref url, visited, options);
             Dictionary<string, string> textCopy = new Dictionary<string, string>();
             foreach (string location in text.Keys)
             {
@@ -92,7 +97,7 @@ namespace get_wikicfp2012.Crawler
                         {
                         }
                     }
-                    Dictionary<string, string> subText = GetSinglePage(ref newLocation, options);
+                    Dictionary<string, string> subText = GetSinglePage(ref newLocation, visited, options);
                     foreach (string addLocation in subText.Keys)
                     {
                         if (!text.ContainsKey(addLocation) && (subText[addLocation] != ""))
@@ -105,7 +110,7 @@ namespace get_wikicfp2012.Crawler
             return text;
         }
 
-        public Dictionary<string, string> GetSinglePage(ref string url, WebInputOptions options)
+        private Dictionary<string, string> GetSinglePage(ref string url, List<string> visited, WebInputOptions options)
         {
             if (String.IsNullOrEmpty(url))
             {
@@ -115,30 +120,42 @@ namespace get_wikicfp2012.Crawler
             {
                 url = url.Substring(url.IndexOf("://") + 3).Trim();
             }
+            visited.Add(url);
             while (DataStore.Instance.contains302(url))
             {
-                string location = DataStore.Instance.get302(url);
-                if (url == location)
+                url = DataStore.Instance.get302(url);
+                if (visited.Contains(url))
                 {
+                    Console.WriteLine("LOOP: " + url);
                     return new Dictionary<string, string>();
                 }
-                url = location;
+                visited.Add(url);
             }
             if (DataStore.Instance.contains404(url))
             {
+                Console.WriteLine("404: " + url);
                 return new Dictionary<string, string>();
             }
             if (((options & WebInputOptions.IncludeVisited) == 0) && IsVisited(url))
             {
+                Console.WriteLine("V: " + url);
                 return new Dictionary<string, string>();
             }
             string result = "";
             string folder;
             string cacheName = GetCacheName(url, out folder);
-            if (File.Exists(cacheName) && ((options & WebInputOptions.ForceDownload) == 0))
+            bool exists;
+            lock (filesLock)
             {
-                Console.WriteLine("C: " + url);
-                result = File.ReadAllText(cacheName);
+                exists = File.Exists(cacheName);
+            }
+            if (exists && ((options & WebInputOptions.ForceDownload) == 0))
+            {
+                lock (filesLock)
+                {
+                    Console.WriteLine("C: " + url);
+                    result = File.ReadAllText(cacheName);
+                }
             }
             else
             {
@@ -184,7 +201,13 @@ namespace get_wikicfp2012.Crawler
                         {
                             DataStore.Instance.store302(url, location);
                             url = location;
-                            return GetPage(ref url, options);
+                            if (visited.Contains(url))
+                            {
+                                Console.WriteLine("LOOP: " + url);
+                                return new Dictionary<string, string>();
+                            }
+                            visited.Add(url);
+                            return GetPage(ref url, visited, options);
                         }
                     }
                     catch (WebException wex1)
@@ -192,6 +215,7 @@ namespace get_wikicfp2012.Crawler
                         if (wex1.Status == WebExceptionStatus.ProtocolError)
                         {
                             DataStore.Instance.store404(url);
+                            Console.WriteLine("E: " + url);
                             return new Dictionary<string, string>();
                         }
                         else
@@ -213,6 +237,7 @@ namespace get_wikicfp2012.Crawler
                         if (wex.Status == WebExceptionStatus.ProtocolError)
                         {
                             DataStore.Instance.store404(url);
+                            Console.WriteLine("E: " + url);
                             return new Dictionary<string, string>();
                         }
 
@@ -244,13 +269,19 @@ namespace get_wikicfp2012.Crawler
                     result = utf.GetString(iso.GetBytes(result));
                 }
                 */
-                Directory.CreateDirectory(folder);
-                lock (filesLock)
+                try
                 {
-                    using (StreamWriter sw = File.CreateText(cacheName))
+                    Directory.CreateDirectory(folder);
+                    lock (filesLock)
                     {
-                        sw.Write(result);
+                        using (StreamWriter sw = File.CreateText(cacheName))
+                        {
+                            sw.Write(result);
+                        }
                     }
+                }
+                catch
+                {
                 }
             }
             lock (visitedLock)

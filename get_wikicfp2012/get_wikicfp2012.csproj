@@ -74,6 +74,7 @@
     <Compile Include="Crawler\GoogleScholar.cs" />
     <Compile Include="Crawler\PagesCrawler.cs" />
     <Compile Include="Crawler\ParseSingle.cs" />
+    <Compile Include="Crawler\ParseSingleCommittee.cs" />
     <Compile Include="Crawler\TagStructure.cs" />
     <Compile Include="Crawler\UrlParser.cs" />
     <Compile Include="Crawler\WebInput.cs" />

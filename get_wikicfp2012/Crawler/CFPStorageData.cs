@@ -292,11 +292,13 @@ namespace get_wikicfp2012.Crawler
         public FindResult FindUniv(string name)
         {
             string[] words = Split(name);
+            /*
             foreach (string word in words)
             {
                 Console.Write(word + ",");
             }
             Console.WriteLine();
+            */
             if ((words.Length < 1) || (words.Length > 4))
             {
                 return new FindResult();
@@ -355,7 +357,7 @@ namespace get_wikicfp2012.Crawler
             }
             if (points > 5)
             {
-                Console.WriteLine("+F: {0}", result.Value);
+                //Console.WriteLine("+F: {0}", result.Value);
                 return new FindResult(result.Key, true);
             }
 
@@ -375,7 +377,7 @@ namespace get_wikicfp2012.Crawler
                 return new FindResult(items.Where(x => x.Value == name).Select(x => x.Key).FirstOrDefault(), false);
             }
             Dictionary<int, string> filtered = new Dictionary<int, string>();
-            Console.Write("# ");
+            //Console.Write("# ");
             string[] _words = Split(name);
             List<string> wordsList = new List<string>();
             foreach (string word in _words)
@@ -384,13 +386,19 @@ namespace get_wikicfp2012.Crawler
                 {
                     continue;
                 }
+                if (word.ToLower() == word)
+                {
+                    continue;
+                }
                 wordsList.Add(word.ToLower());
             }
+            /*
             foreach (string word in wordsList)
             {
                 Console.Write(word + ",");
             }
             Console.WriteLine();
+            */
             if ((wordsList.Count < 2) || (wordsList.Count > 4))
             {
                 return new FindResult();
@@ -531,7 +539,11 @@ namespace get_wikicfp2012.Crawler
                 }
                 if (matchedCount > 1)
                 {
-                    Console.WriteLine("+F: {0}", result.Value);
+                    //Console.WriteLine("+F: {0}", result.Value);
+                    if (result.Key == 1460448)
+                    {
+                        int t = 0;
+                    }
                     return new FindResult(result.Key, false);
                 }
             }

@@ -26,8 +26,8 @@ namespace get_wikicfp2012
         // thread count for page crawler
         public const int THREAD_COUNT = 5;
 
-        // preload SQL wile crawling
-        public const bool LOAD_SQL = false;
+        // preload SQL while crawling
+        public const bool LOAD_SQL = true;
 
         static void Main(string[] args)
         {

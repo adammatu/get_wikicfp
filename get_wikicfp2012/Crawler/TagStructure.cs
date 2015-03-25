@@ -101,6 +101,11 @@ namespace get_wikicfp2012.Crawler
 
         public int ScanNames(CFPStorageData storage)
         {
+            return ScanNames(storage, 0);
+        }
+
+        private int ScanNames(CFPStorageData storage, int depth)
+        {
             //
             foreach (string word in CFPStorageData.Split(CFPStorageData.FixItem(content).ToLower()))
             {
@@ -122,14 +127,21 @@ namespace get_wikicfp2012.Crawler
             //
             authorsIdentified = storage.Find(content);
             int result = authorsIdentified.Count;
-            foreach (TagStructure child in children)
+            if (depth < 50)
             {
-                result += child.ScanNames(storage);
+                foreach (TagStructure child in children)
+                {
+                    result += child.ScanNames(storage, depth + 1);
+                }
+                if ((result == 0) && (children.Count > 1))
+                {
+                    authorsIdentified = storage.Find(CumulatedContent());
+                    result = authorsIdentified.Count;
+                }
             }
-            if ((result == 0) && (children.Count > 1))
+            else
             {
-                authorsIdentified = storage.Find(CumulatedContent());
-                result = authorsIdentified.Count;
+                Console.WriteLine("HTML malformed");
             }
             return result;
         }
@@ -152,26 +164,39 @@ namespace get_wikicfp2012.Crawler
 
         public static object fileLock = new object();
 
-        public void Print()
+        public void Print(bool limited)
         {
             lock (fileLock)
             {
-                Print(0);
+                Print(0, limited);
             }
         }
 
-        public void Print(int level)
+        private void Print(int level, bool limited)
         {
             using (StreamWriter sw = new StreamWriter(Program.CACHE_ROOT + "cfp2\\res.txt", true))
             {
-                sw.WriteLine("{0}{1} {2} {3} {4} {5}", 
-                    new String(' ', level), name, 
-                    (isRole) ? "role" : "", (isCommitee) ? "commitee" : "",
-                    (isName) ? "name" : "", (isAffiliation) ? "affiliation" : "");
+                if (limited)
+                {
+                    if (isCommitee)
+                    {
+                        sw.WriteLine("{0}commitee {1}", new String(' ', level), content);
+                    }
+                }
+                else
+                {
+                    sw.WriteLine("{0}{1} {2} {3} {4} {5}",
+                        new String(' ', level), name,
+                        (isRole) ? "role" : "", (isCommitee) ? "commitee" : "",
+                        (isName) ? "name" : "", (isAffiliation) ? "affiliation" : "");
+                }
                 if (!String.IsNullOrEmpty(content))
                 {
-                    sw.WriteLine("{0}{1}", new String(' ', level + 1), content);
-                    sw.WriteLine("{0}{1}", new String(' ', level + 1), CFPStorageData.FixItem(content).ToLower());
+                    if (!limited)
+                    {
+                        sw.WriteLine("{0}{1}", new String(' ', level + 1), content);
+                        sw.WriteLine("{0}{1}", new String(' ', level + 1), CFPStorageData.FixItem(content).ToLower());
+                    }
                     if (authorsIdentified.Count > 0)
                     {
                         sw.WriteLine("{0}{1}", new String(' ', level + 1), String.Join(",", authorsIdentified));
@@ -180,8 +205,8 @@ namespace get_wikicfp2012.Crawler
             }
             foreach (TagStructure child in children)
             {
-                child.Print(level + 1);
-            }
+                child.Print(level + 1, limited);
+            }           
         }
     }
 }

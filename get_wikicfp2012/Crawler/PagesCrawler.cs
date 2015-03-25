@@ -14,6 +14,7 @@ namespace get_wikicfp2012.Crawler
     class PagesCrawler
     {
         List<CFPFilePaserItem> items = new List<CFPFilePaserItem>();
+        List<string> itemsVisited = new List<string>();
         object itemsLock = new object();
         WebInput input = new WebInput();
         string output;
@@ -24,7 +25,7 @@ namespace get_wikicfp2012.Crawler
         DateTime start = DateTime.Now;
         int threadsStarted = 0;
 
-        private void LoadFile(string inputFile, bool skipNew, int list)
+        private void LoadFile(string inputFile, bool skipNew, int list, bool visited)
         {
             lock (itemsLock)
             {
@@ -45,13 +46,20 @@ namespace get_wikicfp2012.Crawler
                     {
                         continue;
                     }
-                    items.Add(new CFPFilePaserItem
+                    if (visited)
                     {
-                        ID = lineItems[0].Trim(),
-                        Name = lineItems[1].Trim(),
-                        Link = lineItems[2].Trim(),
-                        List = list
-                    });
+                        itemsVisited.Add(lineItems[2].Trim());
+                    }
+                    else
+                    {
+                        items.Add(new CFPFilePaserItem
+                        {
+                            ID = lineItems[0].Trim(),
+                            Name = lineItems[1].Trim(),
+                            Link = lineItems[2].Trim(),
+                            List = list
+                        });
+                    }
                 }
             }
         }
@@ -62,10 +70,12 @@ namespace get_wikicfp2012.Crawler
             newConfFile3 = Program.CACHE_ROOT + Path.ChangeExtension(inputFile, "3.csv");
             output = Program.CACHE_ROOT + outputFile;
             //
-            LoadFile(Program.CACHE_ROOT + inputFile, skipNew, 1);
-            LoadFile(Program.CACHE_ROOT + newConfFile, skipNew, 2);
-            LoadFile(Program.CACHE_ROOT + newConfFile3, skipNew, 3);
-            Console.WriteLine("Loaded");
+            LoadFile(Program.CACHE_ROOT + inputFile, skipNew, 1, false);
+            LoadFile(newConfFile, skipNew, 2, false);
+            LoadFile(newConfFile3, skipNew, 3, false);
+            Console.WriteLine("Loaded {0}", items.Count);
+            LoadFile(Program.CACHE_ROOT + Path.ChangeExtension(inputFile, "visited.csv"), skipNew, 1, true);
+            Console.WriteLine("Loaded Visited {0}", itemsVisited.Count);
             return this;
         }
 
@@ -144,8 +154,13 @@ namespace get_wikicfp2012.Crawler
                         List<CFPFilePaserItem> itemsCopy = new List<CFPFilePaserItem>();
                         itemsCopy = new List<CFPFilePaserItem>();
                         itemsCopy.AddRange(items);
+                        Console.WriteLine("Total Count: {0}", itemsCopy.Count);
                         foreach (CFPFilePaserItem item in itemsCopy)
                         {
+                            if (itemsVisited.Contains(item.Link))
+                            {
+                                continue;
+                            }
                             RunInThreads(ParseEvent, item);
                             Thread.Sleep(500);
                         }
@@ -209,7 +224,7 @@ namespace get_wikicfp2012.Crawler
                     }
                 }
                 Thread.Sleep(100);
-                if (((TimeSpan)(DateTime.Now - start)).TotalSeconds > 5)
+                if (((TimeSpan)(DateTime.Now - start)).TotalSeconds > 30)
                 {
                     start = DateTime.Now;
                     Console.WriteLine("Threads started: {0} current: {1}", threadsStarted, threads.Count);
@@ -221,7 +236,7 @@ namespace get_wikicfp2012.Crawler
         {
             CFPFilePaserItem item = (CFPFilePaserItem)_item;
             Console.WriteLine("reading: " + item.ID);
-            new ParseSingle(item).Run();
+            new ParseSingle(item, itemsVisited.Contains(item.ID)).Run();
         }
 
         public void findPastEventsAndStoreUrlTest(object _item)
