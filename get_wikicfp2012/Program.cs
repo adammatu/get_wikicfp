@@ -39,8 +39,8 @@ namespace get_wikicfp2012
             new ParserDBLP()
                 // parse DBLP 
                 //.Parse(@"D:\work\phd\dblp3\dblp.xml") // Step1
-                //.ParseConf(@"D:\work\phd\dblp3\dblp.xml") 
-                //.UpdateLinks() 
+                //.ParseConf(@"D:\work\phd\dblp3\dblp.xml")  // Step8 !!!!!!!!!!!!!!!
+                //.UpdateLinks() // Step9 !!!!!!!!!!!!!!!
                 ;
 
             new Parser()
@@ -60,13 +60,14 @@ namespace get_wikicfp2012
 
             new PagesCrawler()
                 // parse found URLs files
-                .ParseFile("cfp2\\list.csv", "cfp2\\output.csv", false) //Step4a, Step5a, Step6a
+                //.ParseFile("cfp2\\list.csv", "cfp2\\output.csv", false) //Step4a, Step5a, Step6a
                 // clear list of visited pages                
                 // scan past events link
                 //.Action(PagesCrawlerOptions.PastEvents) //Step4b
                 //.Action(PagesCrawlerOptions.PastEvents2) //Step5b
                 // scan conference pages
-                .Action(PagesCrawlerOptions.SingleThreaded) //Step6b
+                //.Action(PagesCrawlerOptions.SingleThreaded) //Step6b
+                .Action(PagesCrawlerOptions.Load) //Step7
                 ;
 
             new OpiCrawler()

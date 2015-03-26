@@ -5,11 +5,12 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.IO;
 using System.Threading;
+using System.Globalization;
 
 
 namespace get_wikicfp2012.Crawler
 {
-    enum PagesCrawlerOptions { None, SingleThreaded, PastEvents, PastEvents2 };
+    enum PagesCrawlerOptions { None, SingleThreaded, PastEvents, PastEvents2, Load };
 
     class PagesCrawler
     {
@@ -74,7 +75,7 @@ namespace get_wikicfp2012.Crawler
             LoadFile(newConfFile, skipNew, 2, false);
             LoadFile(newConfFile3, skipNew, 3, false);
             Console.WriteLine("Loaded {0}", items.Count);
-            LoadFile(Program.CACHE_ROOT + Path.ChangeExtension(inputFile, "visited.csv"), skipNew, 1, true);
+            LoadFile(ParseSingle.VISITED_FILE, skipNew, 1, true);
             Console.WriteLine("Loaded Visited {0}", itemsVisited.Count);
             return this;
         }
@@ -165,6 +166,11 @@ namespace get_wikicfp2012.Crawler
                             Thread.Sleep(500);
                         }
                         WaitForThreads();
+                        break;
+                    }
+                case PagesCrawlerOptions.Load:
+                    {
+                        LoadIntoDatabase();
                         break;
                     }
             }
@@ -368,6 +374,73 @@ namespace get_wikicfp2012.Crawler
             }
             //
             return result;
+        }
+
+        private void LoadIntoDatabase()
+        {
+            Dictionary<string, int> confIDs = new Dictionary<string, int>();
+            get_wikicfp2012.DBLP.DataStoreDBLP dataStore = new get_wikicfp2012.DBLP.DataStoreDBLP();
+
+            int ccount = 0;
+            string confName = "", confID = "", confLink = "";
+            StreamReader file = new StreamReader(ParseSingle.OUTPUT_FILE);
+            string line;
+            while ((line = file.ReadLine()) != null)
+            {
+                if (line.Length == 0)
+                {
+                    continue;
+                }
+                if (line[0] == '+')
+                {
+                    List<string> parts = new List<string>(line.Split('\t'));
+                    while ((parts.Count > 1) && (Regex.Match(parts[1], "[0-9]+:[^\t]+").Length == 0))
+                    {
+                        parts[0] = String.Format("{0} {1}", parts[0], parts[1]).Trim();
+                        parts.RemoveAt(1);
+                    }
+                    if (parts.Count > 1)
+                    {
+                        string[] parts0 = parts[0].Split("+[]()".ToCharArray(), StringSplitOptions.RemoveEmptyEntries);
+                        DateTime confDate = DateTime.ParseExact(parts0[parts0.Length - 2], "yyyy.MM.dd", CultureInfo.InvariantCulture);
+                        int count = Convert.ToInt32(parts0[parts0.Length - 1]);
+                        string committee = parts0[0];
+
+                        string group = confID;
+                        int pos = confID.LastIndexOf(" ");
+                        if (pos >= 0)
+                        {
+                            group = group.Substring(0, pos);
+                        }
+                        string ID = String.Format("{0} {1:yyyy}", group, confDate);
+                        string Name = String.Format("{0}|{1}", confName, committee);
+
+                        int cID = dataStore.AddEvent(Name, confName, 10, 20, confDate, ID, "", confLink);
+
+                        for (int i = 0; i < count; i++)
+                        {
+                            string[] partsN = parts[i + 1].Split(':');
+                            if (partsN.Length==2)
+                            {
+                                int pID = Convert.ToInt32(partsN[0]);
+                                dataStore.AddLink(pID, cID);
+                            }
+                        }
+                    }
+                }
+                else
+                {
+                    string[] parts = line.Split('\t');
+                    if (parts.Length == 3)
+                    {
+                        confID = parts[0];
+                        confName = parts[1];
+                        confLink = parts[2];
+                    }
+                    Console.WriteLine("{0} {1}", ccount + 1, confName);
+                    ccount++;
+                }
+            }
         }
     }
 }

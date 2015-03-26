@@ -65,9 +65,12 @@ namespace get_wikicfp2012.DBLP
                 else
                 {
                     command = connection.CreateCommand();
-
+                    if (group.Length > 200)
+                    {
+                        group = group.Substring(0, 200);
+                    }
                     sql = String.Format("INSERT INTO [dbo].[tblEventGroup] ([Name],[Type],[Url],[Date]) VALUES ('{0}',{1},'{2}','{3:yyyy-MM-dd}'); SELECT @@IDENTITY",
-                        group.Replace("'", "''"), groupType, groupUrl, date);
+                        group.Replace("'", "''"), groupType, groupUrl.Replace("'", "''"), date);
                     command.CommandText = sql;
                     groupId = Convert.ToInt32(command.ExecuteScalar());
 
@@ -78,7 +81,7 @@ namespace get_wikicfp2012.DBLP
             int id = 0;
             command = connection.CreateCommand();
             sql = String.Format("INSERT INTO [dbo].[tblEvent] ([Name],[Type],[EventGroup_ID],[Key],[Url]) VALUES ('{0}',{1},{2},'{3}','{4}'); SELECT @@IDENTITY",
-                name.Replace("'", "''"), 10 + type, groupId, key, url.Replace("'", "''")
+                name.Replace("'", "''"), 10 + type, groupId, key.Replace("'", "''"), url.Replace("'", "''")
                 );
             command.CommandText = sql;
             id = Convert.ToInt32(command.ExecuteScalar());

@@ -15,6 +15,9 @@ namespace get_wikicfp2012.Crawler
         public static CFPStorageData storage = new CFPStorageData();
         public static object fileLock = new object();
 
+        public const string OUTPUT_FILE = Program.CACHE_ROOT + "cfp2\\committee.csv";
+        public const string VISITED_FILE = Program.CACHE_ROOT + "cfp2\\list.visited.csv";
+
         public ParseSingle(CFPFilePaserItem item, bool markVisted)
         {
             this.item = item;
@@ -181,7 +184,7 @@ namespace get_wikicfp2012.Crawler
         {           
             lock (fileLock)
             {
-                using (StreamWriter sw = new StreamWriter(Program.CACHE_ROOT + "cfp2\\list.visited.csv", true))
+                using (StreamWriter sw = new StreamWriter(VISITED_FILE, true))
                 {
                     sw.WriteLine("{0}\t{1}\t{2}", item.ID, item.Name, item.Link);
                 }
@@ -189,7 +192,7 @@ namespace get_wikicfp2012.Crawler
                 {
                     return;
                 }
-                using (StreamWriter sw = new StreamWriter(Program.CACHE_ROOT + "cfp2\\committee.csv", true))
+                using (StreamWriter sw = new StreamWriter(OUTPUT_FILE, true))
                 {
                     sw.WriteLine("{0}\t{1}\t{2}", item.ID, item.Name, item.Link);
                     foreach (ParseSingleCommittee committee in committees)
