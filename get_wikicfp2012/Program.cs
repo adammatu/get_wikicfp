@@ -39,8 +39,8 @@ namespace get_wikicfp2012
             new ParserDBLP()
                 // parse DBLP 
                 //.Parse(@"D:\work\phd\dblp3\dblp.xml") // Step1
-                //.ParseConf(@"D:\work\phd\dblp3\dblp.xml")  // Step8 !!!!!!!!!!!!!!!
-                //.UpdateLinks() // Step9 !!!!!!!!!!!!!!!
+                //.ParseConf(@"D:\work\phd\dblp3\dblp.xml")  // Step8
+                //.UpdateLinks() // Step9 
                 ;
 
             new Parser()
@@ -67,7 +67,7 @@ namespace get_wikicfp2012
                 //.Action(PagesCrawlerOptions.PastEvents2) //Step5b
                 // scan conference pages
                 //.Action(PagesCrawlerOptions.SingleThreaded) //Step6b
-                .Action(PagesCrawlerOptions.Load) //Step7
+                //.Action(PagesCrawlerOptions.Load) //Step7
                 ;
 
             new OpiCrawler()

@@ -197,5 +197,54 @@ namespace get_wikicfp2012.DBLP
 
             return this;
         }
+
+        public ParserDBLP UpdateLinks()
+        {
+            SqlConnection connection = new SqlConnection(Program.CONNECTION_STRING);
+
+            try
+            {
+                connection.Open();
+            }
+            catch (Exception e)
+            {
+                Console.Write(e.ToString());
+                return this;
+            }
+
+            SqlCommand cmd;
+            SqlDataReader dr;
+            Dictionary<int, string> conf = new Dictionary<int, string>();
+            cmd = connection.CreateCommand();
+            cmd.CommandText = "select * from tblConference";
+            dr = cmd.ExecuteReader();
+            if (dr.HasRows)
+            {
+                while (dr.Read())
+                {
+                    string name = dr["Name"].ToString();
+                    int id = Convert.ToInt32(dr["id"]);
+                    conf.Add(id, name);
+                }
+            }
+            dr.Close();
+
+            int total = 0;
+            foreach (int confId in conf.Keys)
+            {
+                string key = String.Format("conf/{0}/", conf[confId]);
+                cmd = connection.CreateCommand();
+                cmd.CommandText = String.Format("update tblEvent set Conference_ID={0} where left([Key],{1})='{2}' ", confId, key.Length, key);
+                int result = cmd.ExecuteNonQuery();
+                total += result;
+                Console.WriteLine("{0}: {1} [{2}]", conf[confId], result, total);
+
+                string confKey = string.Format("conf/{0}/", conf[confId]);
+            }
+
+            connection.Close();
+
+            return this;
+        }
     }
 }
