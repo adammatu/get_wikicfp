@@ -29,12 +29,13 @@ namespace get_wikicfp2012
         // preload SQL while crawling
         public const bool LOAD_SQL = true;
 
+        //maximum year o calculation (chould be year of data collection)
+        public const int MAXYEAR = 2015;
+
         static void Main(string[] args)
         {
             // steps can be switched off by sommenting out function lines (starting with dot '.')
             // constructor lines must be left in place (staring with new)
-
-
 
             new ParserDBLP()
                 // parse DBLP 
@@ -70,7 +71,7 @@ namespace get_wikicfp2012
                 //.Action(PagesCrawlerOptions.Load) //Step7
                 ;
 
-            new OpiCrawler()
+            new OpiCrawler() // Step 10
                 // Init DB connetion
                 //.Connect()
                 // Scan OPI to select Polish subset
@@ -78,7 +79,7 @@ namespace get_wikicfp2012
                 // Match names to existing
                 //.MatchNames()
                 // Close DB connection
-                //.Close()
+                .Close()
                 ;
 
             //Career line - obsolete
@@ -147,18 +148,16 @@ namespace get_wikicfp2012
                 //.Close()
                 ;
 
-            /*
+            //obsolete ???
             new ConditionalProbability()
                 // prepare phase one
-                .Prepare()
+                //.Prepare()
                 // prepare phase two
-                .Prepare2()
+                //.Prepare2()
                 // calculate 
-                .CalculateAll()
+                //.CalculateAll()
                 ;
-             */
-
-
+            
             new ConditionalGroups()
                 // init
                 //.Open()
@@ -181,24 +180,26 @@ namespace get_wikicfp2012
             */
 
             // calculate scores for people
+            /*
             new ScorePeople()
                 // init
-                //.Prepare()
+                .Prepare() // Step A1a
                 // correlation test friendship transition probability based on year and number of connections
-                //.CalculateTranfers()
+                //.CalculateTranfers() // Step A1b -- removed
                 // calculate scores
-                //.CalculateAll()
+                .CalculateAll() // Step A1c
                 // save scores to file 
-                //.SaveAll()
+                .SaveAll() // Step A1d
                 // import scores from file
-                //.BulkImport()
+                .BulkImport() // Step A1e
                 // TBC - calculate h index
                 //.CalculateHIndex()
                 // TBC - save h index
                 //.SaveHIndex()
                 // close
-                //.Close()
+                .Close() // Step A1f
                 ;            
+             */
            
             // calculate career lines (scores based on years since career start)
             new ScoreCareerLine()

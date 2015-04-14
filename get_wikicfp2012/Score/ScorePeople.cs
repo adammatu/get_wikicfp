@@ -9,8 +9,7 @@ using System.IO;
 namespace get_wikicfp2012.Score
 {
     public class ScorePeople
-    {
-        const int MAXYEAR = 2013;
+    {        
         SqlConnection connection = new SqlConnection(Program.CONNECTION_STRING);
 
         public Dictionary<int, ScorePersonData> people = new Dictionary<int, ScorePersonData>();
@@ -204,8 +203,7 @@ namespace get_wikicfp2012.Score
         {
             int minYear = people.Values.Select(x => x.startYear).Min();
             //int minYear = 2010;
-            int maxYear = MAXYEAR;
-            for (int year = minYear; year < maxYear; year++)
+            for (int year = minYear; year <= Program.MAXYEAR; year++)
             {
                 foreach (int pID in people.Keys)
                 {
@@ -220,12 +218,7 @@ namespace get_wikicfp2012.Score
                     if (people[pID].startYear > year)
                     {
                         continue;
-                    }
-                    if (pID == 188895) //M.Morzy
-                    //if (pID == 43865)
-                    {
-                        int y = 0;
-                    }
+                    }                   
                     List<ScorePersonEventData> yearEvents = people[pID].eventLinks.Select(x => events[x]).Where(x => x.Year == year).ToList();
                     double newScore = 0.0;
                     foreach (ScorePersonEventData ev in yearEvents)
@@ -235,8 +228,6 @@ namespace get_wikicfp2012.Score
                         {
                             continue;
                         }
-                        double connections = (cnt * (cnt - 1)) / 2.0;
-                        //double strength = 1.0 / connections;
                         double strength = 1.0 / cnt;
                         foreach (int pIDl in ev.peopleLinks)
                         {
@@ -245,9 +236,6 @@ namespace get_wikicfp2012.Score
                                 continue;
                             }
                             double linkScore = (people[pIDl].score.ContainsKey(year - 1)) ? people[pIDl].score[year - 1] : 1;
-                            //int ccnt = (people[pIDl].connectionCount.ContainsKey(year - 1)) ? people[pIDl].connectionCount[year - 1] : 1;
-                            int ccnt = year - people[pIDl].startYear;
-                            //double transfer = 0.016706084 - 0.00015877 * ccnt;                            
                             double transfer = 0.01379;
                             double weightedScore = (1.0 + (linkScore - 1.0) * transfer) * strength;
                             if (people[pID].peopleLinkScore.ContainsKey(pIDl))
@@ -299,7 +287,7 @@ namespace get_wikicfp2012.Score
                     ScorePersonData person = people[pID];
                     command.CommandText = String.Format("update tblPerson set StartYear={0} where ID={1};", person.startYear, pID);
                     command.ExecuteNonQuery();
-                    for (int year = person.startYear; year < MAXYEAR; year++)
+                    for (int year = person.startYear; year <= Program.MAXYEAR; year++)
                     {
                         double score;
                         if (person.score.ContainsKey(year))
