@@ -157,18 +157,19 @@ namespace get_wikicfp2012
                 // calculate 
                 //.CalculateAll()
                 ;
-            
+
+            //add groups using update_groups.sql before this step
             new ConditionalGroups()
                 // init
-                //.Open()
+                //.Open() // Step A1a
                 // read events from databae to file
-                //.ReadEvents()
+                //.ReadEvents() // Step A1b
                 // identify event reasons
-                //.IdentifyReasons()                
+                .IdentifyReasons() // Step A2
                 // collect reason stats and save
-                //.Collect()
+                //.Collect() // Step A3
                 // close
-                //.Close()
+                //.Close() // Step A1c
                 ;
 
             /*
@@ -183,21 +184,21 @@ namespace get_wikicfp2012
             /*
             new ScorePeople()
                 // init
-                .Prepare() // Step A1a
+                .Prepare() // Step B1a
                 // correlation test friendship transition probability based on year and number of connections
-                //.CalculateTranfers() // Step A1b -- removed
+                //.CalculateTranfers() // Step B1b -- removed
                 // calculate scores
-                .CalculateAll() // Step A1c
+                .CalculateAll() // Step B1c
                 // save scores to file 
-                .SaveAll() // Step A1d
+                .SaveAll() // Step B1d
                 // import scores from file
-                .BulkImport() // Step A1e
+                .BulkImport() // Step B1e
                 // TBC - calculate h index
                 //.CalculateHIndex()
                 // TBC - save h index
                 //.SaveHIndex()
                 // close
-                .Close() // Step A1f
+                .Close() // Step B1f
                 ;            
              */
            

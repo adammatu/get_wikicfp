@@ -48,6 +48,11 @@ namespace get_wikicfp2012.ProbabilityGroups
             {
                 throw new NullReferenceException();
             }
+            string dir = Path.GetDirectoryName(filename);
+            if (!Directory.Exists(dir))
+            {
+                Directory.CreateDirectory(dir);
+            }
             using (StreamWriter sw = File.CreateText(filename))
             {
                 foreach (List<T> lines in list.Values)

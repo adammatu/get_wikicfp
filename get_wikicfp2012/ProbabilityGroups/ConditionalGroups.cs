@@ -13,7 +13,9 @@ namespace get_wikicfp2012.ProbabilityGroups
     {
         SqlConnection connection = new SqlConnection(Program.CONNECTION_STRING);
         private Dictionary<int, List<ConditionalEvent>> peopleevents = new Dictionary<int, List<ConditionalEvent>>();
-        private Dictionary<int, HashSet<int>> eventspeople = new Dictionary<int, HashSet<int>>();
+        private Dictionary<int, IntList> eventspeople = new Dictionary<int, IntList>();
+        private List<string> eventsgroups = new List<string>();
+        private Dictionary<string, List<ConditionalEvent>> groupevents = new Dictionary<string, List<ConditionalEvent>>();
 
         public ConditionalGroups Open()
         {
@@ -53,7 +55,7 @@ namespace get_wikicfp2012.ProbabilityGroups
                     int eid = Convert.ToInt32(dr["eID"]);
                     DateTime date = Convert.ToDateTime(dr["date"]);
                     int etype = Convert.ToInt32(dr["etype"]);
-                    double escore = Convert.ToDouble(dr["escore"]);
+                    //double escore = Convert.ToDouble(dr["escore"]);
                     int egtype = Convert.ToInt32(dr["egtype"]);
                     int evID = (dr["evID"] == DBNull.Value) ? (-1) : Convert.ToInt32(dr["evID"]);
                     int evID2 = (dr["evID2"] == DBNull.Value) ? (-1) : Convert.ToInt32(dr["evID2"]);
@@ -86,22 +88,73 @@ namespace get_wikicfp2012.ProbabilityGroups
             return this;
         }
 
+        private bool IsGroup(ConditionalEvent E2, ConditionalEvent E1)
+        {
+            return E1.Group == E2.Group;
+        }
+
+        private bool IsNotGroup(ConditionalEvent E2, ConditionalEvent E1)
+        {
+            return E1.Group != E2.Group;
+        }
+
+        private bool IsAnyGroup(ConditionalEvent E)
+        {
+            return E.Group >= 0;
+        }
+
         private ConditionalReason Check(int pid, ConditionalEvent E2, ConditionalEvent E1)
         {
-            if (((E2.Conference > 0) && (E1.Conference != E2.Conference))||
-                ((E2.GroupName != "") && (E1.GroupName == E2.GroupName)))
+            IntList eventspeopleE1 = eventspeople[E1.Event];
+            IntList eventspeopleE2 = eventspeople[E2.Event];
+#if false // Code removed temporarily because works too slow
+            if (IsNotGroup(E2, E1) && IsAnyGroup(E2))
             {
                 bool l2f3 = false;
-                foreach (int friendID in eventspeople[E1.Event])
+                /*
+                string group = E2.GroupName.ToLower();
+                for (int i = 0; i < eventspeopleE1.Count; i++)
                 {
+                    int friendID = eventspeopleE1[i];
+                    if (friendID == pid)
+                    {
+                        continue;
+                    }
+                    List<ConditionalEvent> groupE3 = groupevents[group];
+                    foreach (ConditionalEvent E3 in groupE3)
+                    {
+                        if (E3.Date < E2.Date)
+                        {
+                            IntList eventspeopleE3 = eventspeople[E3.Event];
+                            if (!eventspeopleE3.Contains(friendID))
+                            {
+                                continue;
+                            }
+                            if (eventspeopleE3.Contains(pid))
+                            {
+                                continue;
+                            }
+                            bool f2 = (eventspeopleE2.Contains(friendID));
+                            if (f2)
+                            {
+                                return ConditionalReason.Link2Friend2Friend3;
+                            }
+                            l2f3 = true;
+                            break;
+                        }
+                    }
+                }
+                */
+                for (int i=0;i<eventspeopleE1.Count;i++)
+                {
+                    int friendID=eventspeopleE1[i];
                     if (friendID == pid)
                     {
                         continue;
                     }
                     foreach (ConditionalEvent E3 in peopleevents[friendID])
                     {
-                        if (((E3.Conference > 0) && (E3.Conference == E2.Conference)) ||
-                            ((E3.GroupName != "") && (E3.GroupName == E2.GroupName)))
+                        if (IsGroup(E2, E3))
                         {
                             if (E3.Date < E2.Date)
                             {
@@ -109,7 +162,7 @@ namespace get_wikicfp2012.ProbabilityGroups
                                 {
                                     continue;
                                 }
-                                bool f2 = (eventspeople[E2.Event].Contains(friendID));
+                                bool f2 = (eventspeopleE2.Contains(friendID));
                                 if (f2)
                                 {
                                     return ConditionalReason.Link2Friend2Friend3;
@@ -120,21 +173,23 @@ namespace get_wikicfp2012.ProbabilityGroups
                         }
                     }
                 }
+                //
                 if (l2f3)
                 {
                     return ConditionalReason.Link2Friend3;
                 }
             }
+#endif
             bool link = false;
-            if (((E1.Conference > 0) && (E1.Conference == E2.Conference))||
-                ((E1.GroupName != "") && (E1.GroupName == E2.GroupName)))
+            if (IsGroup(E2, E1))
             {
                 link = true;
             }
             bool friend = false;
-            foreach (int p1 in eventspeople[E1.Event])
+            for (int i = 0; i < eventspeopleE1.Count; i++)
             {
-                if ((eventspeople[E2.Event].Contains(p1)) && (p1 != pid))
+                int p1 = eventspeopleE1[i];
+                if ((eventspeopleE2.Contains(p1)) && (p1 != pid))
                 {
                     friend = true;
                     break;
@@ -161,13 +216,34 @@ namespace get_wikicfp2012.ProbabilityGroups
 
             Console.WriteLine("Load");
             FileStorage2<ConditionalEvent>.Load("cg", 1, peopleevents);
-            Console.WriteLine("Sort");
+            Console.WriteLine("Sort and Group");
             List<int> ids = peopleevents.Keys.ToList();
+            int notGroupIndex = 1;
             foreach (int id in ids)
             {
                 List<ConditionalEvent> lce = peopleevents[id];
+                for (int i1 = 0; i1 < lce.Count; i1++)
+                {
+                    ConditionalEvent lce1 = lce[i1];
+                    string group = lce1.GroupName.ToLower();
+                    if (group == "")
+                    {
+                        lce1.Group = -notGroupIndex;
+                        notGroupIndex++;
+                    }
+                    else
+                    {
+                        if (!eventsgroups.Contains(group))
+                        {
+                            eventsgroups.Add(group);
+                            groupevents.Add(group, new List<ConditionalEvent>());
+                        }
+                        lce1.Group = eventsgroups.IndexOf(group);
+                        groupevents[group].Add(lce1);
+                    }
+                }
                 peopleevents[id] = lce.OrderByDescending(x => x.Date).ToList();
-            }
+            } 
             Console.WriteLine("Event Prepare");
             eventspeople.Clear();
             foreach (int id in ids)
@@ -176,13 +252,13 @@ namespace get_wikicfp2012.ProbabilityGroups
                 {
                     if (!eventspeople.ContainsKey(e.Event))
                     {
-                        eventspeople.Add(e.Event, new HashSet<int>());
+                        eventspeople.Add(e.Event, new IntList());
                     }
                     eventspeople[e.Event].Add(id);
                 }
             }
             Console.WriteLine("Prepare Done");
-            string filename=String.Format("{0}lines\\tblLinkReason.csv", Program.CACHE_ROOT);
+            string filename = String.Format("{0}lines\\tblLinkReason.csv", Program.CACHE_ROOT);
             using (StreamWriter sw = File.CreateText(filename))
             {
                 int linkCount = 0;
@@ -194,7 +270,7 @@ namespace get_wikicfp2012.ProbabilityGroups
                     List<ConditionalEvent> lce = peopleevents[id];
                     for (int i1 = 0; i1 < lce.Count; i1++)
                     {
-                        for (int i2 = i1 + 1; i2 < lce.Count; i2++)
+                        for (int i2 = i1 + 1; i2 < lce.Count; i2++) 
                         {
                             ConditionalReason reason = Check(id, lce[i1], lce[i2]);
                             if (reason != ConditionalReason.None)
@@ -217,7 +293,7 @@ namespace get_wikicfp2012.ProbabilityGroups
                                 command.ExecuteNonQuery();
                                  */
                                 linkCount++;
-                                string line=String.Format(
+                                string line = String.Format(
                                     "{0},{1},{2},{3}",
                                     linkCount,
                                     lce[i1].Link,
@@ -248,8 +324,8 @@ namespace get_wikicfp2012.ProbabilityGroups
             SqlCommand command;
             SqlDataReader dr;
             //
-            int cnt = 0;            
-            DateTime start = DateTime.Now;   
+            int cnt = 0;
+            DateTime start = DateTime.Now;
             //
             command = connection.CreateCommand();
             command.CommandText = "select e.Type,eg.Date from tblLink l " +
@@ -300,7 +376,7 @@ namespace get_wikicfp2012.ProbabilityGroups
                 "lr.Reason as reason, " +
                 "e.Type as type,eg.Date as date, " +
                 "e2.Type as type2,eg2.Date as date2, " +
-                "e.ID as id "+
+                "e.ID as id " +
                 "from tblLinkReason lr " +
                 "left join tblLink l on lr.ReasonLink_ID=l.ID " +
                 "left join tblEvent e on l.Event_ID=e.ID " +
@@ -338,7 +414,7 @@ namespace get_wikicfp2012.ProbabilityGroups
             Console.WriteLine("Read Event Reason Counts OK");
             //            
             cnt = 0;
-            start = DateTime.Now;            
+            start = DateTime.Now;
             //            
             command = connection.CreateCommand();
             command.CommandTimeout = 0;
@@ -346,7 +422,7 @@ namespace get_wikicfp2012.ProbabilityGroups
                 "lr.Reason as reason, " +
                 "e.Type as type,eg.Date as date, " +
                 "e2.Type as type2,eg2.Date as date2, " +
-                "e.ID as id "+
+                "e.ID as id " +
                 "from tblLinkReason lr " +
                 "left join tblLink l on lr.ReasonLink_ID=l.ID " +
                 "left join tblEvent e on l.Event_ID=e.ID " +
@@ -359,7 +435,7 @@ namespace get_wikicfp2012.ProbabilityGroups
             {
                 while (dr.Read())
                 {
-                    if ((dr["date"] == DBNull.Value)||(dr["date2"] == DBNull.Value))
+                    if ((dr["date"] == DBNull.Value) || (dr["date2"] == DBNull.Value))
                     {
                         continue;
                     }
@@ -392,7 +468,7 @@ namespace get_wikicfp2012.ProbabilityGroups
                         {
                             result.Increase(reason, year, ConditionalSingleResultField.LinksCommitteeReasonPublicationTotal, val);
                             result.Increase(reason, timespan, ConditionalSingleResultField.TimespanLinksCommitteeReasonPublicationTotal, val);
-                        }   
+                        }
                     }
                     else
                     {

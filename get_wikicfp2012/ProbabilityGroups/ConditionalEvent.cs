@@ -19,6 +19,8 @@ namespace get_wikicfp2012.ProbabilityGroups
         public string GroupName;
         public List<ConditionalLink> Reason = new List<ConditionalLink>();
 
+        public int Group;
+
         public int ID
         {
             get
