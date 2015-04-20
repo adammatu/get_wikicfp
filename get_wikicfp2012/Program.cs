@@ -159,18 +159,20 @@ namespace get_wikicfp2012
                 ;
 
             //add groups using update_groups.sql before this step
+            /*
             new ConditionalGroups()
                 // init
                 //.Open() // Step A1a
                 // read events from databae to file
                 //.ReadEvents() // Step A1b
                 // identify event reasons
-                .IdentifyReasons() // Step A2
+                //.IdentifyReasons() // Step A2
                 // collect reason stats and save
                 //.Collect() // Step A3
                 // close
                 //.Close() // Step A1c
                 ;
+             */
 
             /*
             // deprecated object score
@@ -181,7 +183,7 @@ namespace get_wikicfp2012
             */
 
             // calculate scores for people
-            /*
+            
             new ScorePeople()
                 // init
                 .Prepare() // Step B1a
@@ -192,7 +194,7 @@ namespace get_wikicfp2012
                 // save scores to file 
                 .SaveAll() // Step B1d
                 // import scores from file
-                .BulkImport() // Step B1e
+                //.BulkImport() // Step B2
                 // TBC - calculate h index
                 //.CalculateHIndex()
                 // TBC - save h index
@@ -200,7 +202,7 @@ namespace get_wikicfp2012
                 // close
                 .Close() // Step B1f
                 ;            
-             */
+             
            
             // calculate career lines (scores based on years since career start)
             new ScoreCareerLine()

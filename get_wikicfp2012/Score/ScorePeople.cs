@@ -205,14 +205,24 @@ namespace get_wikicfp2012.Score
             //int minYear = 2010;
             for (int year = minYear; year <= Program.MAXYEAR; year++)
             {
+                Console.WriteLine("Year {0} start", year);
                 foreach (int pID in people.Keys)
                 {
                     if ((people[pID].startYear - 1) > year)
                     {
                         continue;
                     }
-                    people[pID].connectionCount.Add(year, people[pID].peopleLinkScore.Count);
+                    people[pID].connectionCount.Add(year,
+                        new ScorePersonCount()
+                        {
+                            connection = people[pID].peopleLinkScore.Count,
+                            triangle = people[pID].triangleCount
+                        });
                 }
+                Console.WriteLine("Year {0} init done", year);
+                int pcnt = 0;
+                DateTime started = DateTime.Now;
+                DateTime start = DateTime.Now;
                 foreach (int pID in people.Keys) 
                 {
                     if (people[pID].startYear > year)
@@ -228,7 +238,6 @@ namespace get_wikicfp2012.Score
                         {
                             continue;
                         }
-                        double strength = 1.0 / cnt;
                         foreach (int pIDl in ev.peopleLinks)
                         {
                             if (pIDl == pID)
@@ -236,8 +245,11 @@ namespace get_wikicfp2012.Score
                                 continue;
                             }
                             double linkScore = (people[pIDl].score.ContainsKey(year - 1)) ? people[pIDl].score[year - 1] : 1;
-                            double transfer = 0.01379;
-                            double weightedScore = (1.0 + (linkScore - 1.0) * transfer) * strength;
+                            int tri = (people[pIDl].connectionCount.ContainsKey(year - 1)) ? people[pIDl].connectionCount[year - 1].triangle : 0;
+                            int ccnt = (people[pIDl].connectionCount.ContainsKey(year - 1)) ? people[pIDl].connectionCount[year - 1].connection : 0;
+                            int tcnt = ccnt * (ccnt - 1) / 2;
+                            double transfer = (tcnt > 0) ? ((double)tri / tcnt) : 0;
+                            double weightedScore = 1.0 + (linkScore - 1.0) * transfer;
                             if (people[pID].peopleLinkScore.ContainsKey(pIDl))
                             {
                                 if (people[pID].peopleLinkScore[pIDl] < weightedScore)
@@ -248,6 +260,13 @@ namespace get_wikicfp2012.Score
                             }
                             else
                             {
+                                foreach (int fID in people[pID].peopleLinkScore.Keys)
+                                {
+                                    if (people[fID].peopleLinkScore.Keys.Contains(pIDl))
+                                    {
+                                        people[fID].triangleCount++;
+                                    }
+                                }
                                 newScore += weightedScore;
                                 people[pID].peopleLinkScore.Add(pIDl, weightedScore);
                             }
@@ -260,6 +279,14 @@ namespace get_wikicfp2012.Score
                     double prevScore = (people[pID].score.ContainsKey(year - 1)) ? people[pID].score[year - 1] : 1;
                     double score = prevScore + newScore;
                     people[pID].score.Add(year, score);
+
+                    pcnt++;
+                    if (((TimeSpan)(DateTime.Now - start)).TotalSeconds > 30)
+                    {
+                        int seconds = (int)(((TimeSpan)(DateTime.Now - started)).TotalSeconds * (people.Count - pcnt) / pcnt);
+                        Console.WriteLine("Count left: {0} | minutes left: {1}", people.Count - pcnt, seconds / 60);
+                        start = DateTime.Now;
+                    }
                 }
                 Console.WriteLine("Year {0} done", year);
             }
@@ -305,23 +332,26 @@ namespace get_wikicfp2012.Score
                                 score = person.score.Values.Max();
                             }
                         }
-                        int ccnt;
+                        int ccnt,tri;
                         if (person.connectionCount.ContainsKey(year))
                         {
-                            ccnt = person.connectionCount[year];
+                            ccnt = person.connectionCount[year].connection;
+                            tri = person.connectionCount[year].triangle;
                         }
                         else
                         {
                             if (year < person.connectionCount.Keys.Min())
                             {
                                 ccnt = 0;
+                                tri = 0;
                             }
                             else
                             {
-                                ccnt = person.connectionCount.Values.Max();
+                                ccnt = person.connectionCount[person.connectionCount.Keys.Max()].connection;
+                                tri = person.connectionCount[person.connectionCount.Keys.Max()].triangle;
                             }
                         }
-                        sw.WriteLine("{0},{1},{2},{3},{4}",
+                        sw.WriteLine("{0},{1},{2},{3},{4},{5}",
                             ++id,
                             pID,
                             year,

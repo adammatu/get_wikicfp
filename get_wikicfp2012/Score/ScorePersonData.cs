@@ -5,12 +5,19 @@ using System.Text;
 
 namespace get_wikicfp2012.Score
 {
+    public class ScorePersonCount
+    {
+        public int connection;
+        public int triangle;
+    }
+
     public class ScorePersonData
     {
         public List<int> eventLinks = new List<int>();        
         public Dictionary<int, double> peopleLinkScore = new Dictionary<int, double>();
+        public int triangleCount = 0;
         public Dictionary<int, double> score = new Dictionary<int, double>();
-        public Dictionary<int, int> connectionCount = new Dictionary<int, int>();
+        public Dictionary<int, ScorePersonCount> connectionCount = new Dictionary<int, ScorePersonCount>();        
         public int startYear;
         public int hIndex = -1;
     }
