@@ -18,7 +18,7 @@ namespace get_wikicfp2012
     {
         // connection string to MSSQL database
         // script in database folder 
-        public const string CONNECTION_STRING = @"Data Source=OSTRICH\SQLEXPRESS;Database=dbScience3;Integrated Security=SSPI;Connect Timeout=0";
+        public const string CONNECTION_STRING = @"Data Source=OSTRICH\SQLEXPRESS;Database=dbScience3;Integrated Security=SSPI;Connection Timeout=0;Connection Lifetime=0";
 
         //root for local web-cache, temporary files and result files
         public const string CACHE_ROOT = @"D:\work\phd\!\";
@@ -39,7 +39,7 @@ namespace get_wikicfp2012
 
             new ParserDBLP()
                 // parse DBLP 
-                //.Parse(@"D:\work\phd\dblp3\dblp.xml") // Step1
+                .Parse(@"D:\work\phd\dblp3\dblp.xml") // Step1
                 //.ParseConf(@"D:\work\phd\dblp3\dblp.xml")  // Step8
                 //.UpdateLinks() // Step9 
                 ;
@@ -183,7 +183,7 @@ namespace get_wikicfp2012
             */
 
             // calculate scores for people
-            
+            /*
             new ScorePeople()
                 // init
                 .Prepare() // Step B1a
@@ -201,7 +201,8 @@ namespace get_wikicfp2012
                 //.SaveHIndex()
                 // close
                 .Close() // Step B1f
-                ;            
+                ;          
+             */
              
            
             // calculate career lines (scores based on years since career start)

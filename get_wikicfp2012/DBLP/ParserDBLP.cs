@@ -8,6 +8,7 @@ using System.Data.SqlClient;
 
 namespace get_wikicfp2012.DBLP
 {
+    enum ParserDBLPMode { NoStore, Parse, Reparse };
     class ParserDBLP
     {
         string[] tags = { "article", "inproceedings", "proceedings", "book", "incollection", "phdthesis", "mastersthesis", "www" };
@@ -16,7 +17,16 @@ namespace get_wikicfp2012.DBLP
 
         public void Parse(string filename)
         {
+            Parse(filename, ParserDBLPMode.Parse, 0);
+        }
+
+        public void Parse(string filename,ParserDBLPMode mode, int skipUntilArticle)
+        {
             DataStoreDBLP store = new DataStoreDBLP();
+            if (mode == ParserDBLPMode.Reparse)
+            {
+                store.PreLoad();
+            }
             int article = 0;
             StreamReader file = new StreamReader(filename);
             string _line;
@@ -36,16 +46,29 @@ namespace get_wikicfp2012.DBLP
                     {
                         break;
                     }
-                    int close2 = _line.IndexOf(">", close1 + 1);
-                    if (close2 < 0)
+                    int close1open = _line.LastIndexOf("<", close1);
+                    if (close1open < 0)
                     {
-                        line = _line;
-                        _line = "";
+                        break;
+                    }
+                    if (_line.Substring(close1open, 2) == "</")
+                    {
+                        line = _line.Substring(0, close1 + 1);
+                        _line = _line.Substring(close1 + 1).Trim();
                     }
                     else
                     {
-                        line = _line.Substring(0, close2 + 1);
-                        _line = _line.Substring(close2 + 1).Trim();
+                        int close2 = _line.IndexOf(">", close1 + 1);
+                        if (close2 < 0)
+                        {
+                            line = _line;
+                            _line = "";
+                        }
+                        else
+                        {
+                            line = _line.Substring(0, close2 + 1);
+                            _line = _line.Substring(close2 + 1).Trim();
+                        }
                     }
                     if (currentTag == "")
                     {
@@ -87,12 +110,42 @@ namespace get_wikicfp2012.DBLP
                         {
                             DateTime date = new DateTime(year, month, day);
                             int groupType = Array.IndexOf(groupTags, groupTag);
-                            int eventId = store.AddEvent(title, group, groupType, Array.IndexOf(tags, currentTag), date, key, url, "");
 
-                            foreach (string author in authors)
+                            switch (mode)
                             {
-                                int authorId = store.AddPerson(author);
-                                store.AddLink(authorId, eventId);
+                                case ParserDBLPMode.NoStore:
+                                    {
+                                        break;
+                                    }
+                                case ParserDBLPMode.Parse:
+                                    {
+                                        int eventId = store.AddEvent(title, group, groupType, Array.IndexOf(tags, currentTag), date, key, url, "");
+
+                                        foreach (string author in authors)
+                                        {
+                                            int authorId = store.AddPerson(author);
+                                            store.AddLink(authorId, eventId);
+                                        }
+                                        break;
+                                    }
+                                case ParserDBLPMode.Reparse:
+                                    {
+                                        if (article >= skipUntilArticle)
+                                        {
+                                            int eventId = store.UpdateEvent(title, group, groupType, Array.IndexOf(tags, currentTag), date, key, url, "");
+                                            int linkCount = store.CountLinks(eventId);
+                                            if (linkCount != authors.Count)
+                                            {
+                                                store.ClearLinks(eventId);
+                                                foreach (string author in authors)
+                                                {
+                                                    int authorId = store.UpdatePerson(author);
+                                                    store.AddLink(authorId, eventId);
+                                                }
+                                            }
+                                        }
+                                        break;
+                                    }
                             }
                             //Console.WriteLine();
 
