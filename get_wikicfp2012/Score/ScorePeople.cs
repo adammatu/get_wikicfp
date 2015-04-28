@@ -9,11 +9,12 @@ using System.IO;
 namespace get_wikicfp2012.Score
 {
     public class ScorePeople
-    {        
+    {
         SqlConnection connection = new SqlConnection(Program.CONNECTION_STRING);
 
         public Dictionary<int, ScorePersonData> people = new Dictionary<int, ScorePersonData>();
         public Dictionary<int, ScorePersonEventData> events = new Dictionary<int, ScorePersonEventData>();
+        private int tblPersonScoreID;
 
         public ScorePeople Prepare()
         {
@@ -94,7 +95,6 @@ namespace get_wikicfp2012.Score
             foreach (int pID in people.Keys)
             {
                 people[pID].startYear = people[pID].eventLinks.Select(x => events[x].Year).Min();
-                people[pID].score.Add(people[pID].startYear - 1, 1);
             }
             //
             Console.WriteLine("Read End");
@@ -201,6 +201,7 @@ namespace get_wikicfp2012.Score
 
         public ScorePeople CalculateAll()
         {
+            tblPersonScoreID = 0;
             int minYear = people.Values.Select(x => x.startYear).Min();
             //int minYear = 2010;
             for (int year = minYear; year <= Program.MAXYEAR; year++)
@@ -221,14 +222,16 @@ namespace get_wikicfp2012.Score
                 }
                 Console.WriteLine("Year {0} init done", year);
                 int pcnt = 0;
+                int tpcnt = people.Values.Where(x => x.startYear <= year).Count();
+                Console.WriteLine("Year {0} count {1}", year, tpcnt);
                 DateTime started = DateTime.Now;
                 DateTime start = DateTime.Now;
-                foreach (int pID in people.Keys) 
+                foreach (int pID in people.Keys)
                 {
                     if (people[pID].startYear > year)
                     {
                         continue;
-                    }                   
+                    }
                     List<ScorePersonEventData> yearEvents = people[pID].eventLinks.Select(x => events[x]).Where(x => x.Year == year).ToList();
                     double newScore = 0.0;
                     foreach (ScorePersonEventData ev in yearEvents)
@@ -244,7 +247,7 @@ namespace get_wikicfp2012.Score
                             {
                                 continue;
                             }
-                            double linkScore = (people[pIDl].score.ContainsKey(year - 1)) ? people[pIDl].score[year - 1] : 1;
+                            double linkScore = (people[pIDl].connectionCount.ContainsKey(year - 1)) ? people[pIDl].connectionCount[year - 1].score : 1;
                             int tri = (people[pIDl].connectionCount.ContainsKey(year - 1)) ? people[pIDl].connectionCount[year - 1].triangle : 0;
                             int ccnt = (people[pIDl].connectionCount.ContainsKey(year - 1)) ? people[pIDl].connectionCount[year - 1].connection : 0;
                             int tcnt = ccnt * (ccnt - 1) / 2;
@@ -276,92 +279,79 @@ namespace get_wikicfp2012.Score
                     {
                         int k = 0;
                     }
-                    double prevScore = (people[pID].score.ContainsKey(year - 1)) ? people[pID].score[year - 1] : 1;
+                    double prevScore = (people[pID].connectionCount.ContainsKey(year - 1)) ? people[pID].connectionCount[year - 1].score : 1;
                     double score = prevScore + newScore;
-                    people[pID].score.Add(year, score);
+                    people[pID].connectionCount[year].score = score;
 
                     pcnt++;
                     if (((TimeSpan)(DateTime.Now - start)).TotalSeconds > 30)
                     {
-                        int seconds = (int)(((TimeSpan)(DateTime.Now - started)).TotalSeconds * (people.Count - pcnt) / pcnt);
-                        Console.WriteLine("Count left: {0} | minutes left: {1}", people.Count - pcnt, seconds / 60);
+                        int seconds = (int)(((TimeSpan)(DateTime.Now - started)).TotalSeconds * (tpcnt - pcnt) / pcnt);
+                        Console.WriteLine("Count left: {0} | minutes left: {1}", tpcnt - pcnt, seconds / 60);
                         start = DateTime.Now;
                     }
                 }
                 Console.WriteLine("Year {0} done", year);
+                SaveYear(year);
+                Console.WriteLine("Year {0} remove", year - 1);
+                foreach (int pID in people.Keys)
+                {
+                    people[pID].connectionCount.Remove(year - 1);
+                }
             }
+            SaveStartYear();
             return this;
         }
 
-        public ScorePeople SaveAll()
+        private void SaveStartYear()
         {
             //
-            Console.WriteLine("Save Start");
-            SqlCommand command;
-            string filename = String.Format("{0}lines\\tblPersonScore.csv", Program.CACHE_ROOT);
-            //            
-            //people
-            command = connection.CreateCommand();
-            //command.CommandText = "update tblPerson set StartYear=null;";
-            //command.ExecuteNonQuery();
-            //command.CommandText = "delete from tblPersonScore;";
-            //command.ExecuteNonQuery();
+            Console.WriteLine("Save Year Start");
+            string filename = String.Format("{0}lines\\tblPersonStartYear.csv", Program.CACHE_ROOT);
+            //         
             int id = 0;
-            using (StreamWriter sw = File.CreateText(filename))
+            using (StreamWriter sw = File.AppendText(filename))
             {
                 foreach (int pID in people.Keys)
                 {
                     ScorePersonData person = people[pID];
-                    command.CommandText = String.Format("update tblPerson set StartYear={0} where ID={1};", person.startYear, pID);
-                    command.ExecuteNonQuery();
-                    for (int year = person.startYear; year <= Program.MAXYEAR; year++)
-                    {
-                        double score;
-                        if (person.score.ContainsKey(year))
-                        {
-                            score = person.score[year];
-                        }
-                        else
-                        {
-                            if (year < person.score.Keys.Min())
-                            {
-                                score = 1;
-                            }
-                            else
-                            {
-                                score = person.score.Values.Max();
-                            }
-                        }
-                        int ccnt,tri;
-                        if (person.connectionCount.ContainsKey(year))
-                        {
-                            ccnt = person.connectionCount[year].connection;
-                            tri = person.connectionCount[year].triangle;
-                        }
-                        else
-                        {
-                            if (year < person.connectionCount.Keys.Min())
-                            {
-                                ccnt = 0;
-                                tri = 0;
-                            }
-                            else
-                            {
-                                ccnt = person.connectionCount[person.connectionCount.Keys.Max()].connection;
-                                tri = person.connectionCount[person.connectionCount.Keys.Max()].triangle;
-                            }
-                        }
-                        sw.WriteLine("{0},{1},{2},{3},{4},{5}",
+                    sw.WriteLine("{0},{1},{2}",
                             ++id,
                             pID,
-                            year,
-                            String.Format("{0:0.0000}", score).Replace(",", "."),
-                            ccnt);
+                            person.startYear);
+                }
+            }
+        }
+
+        private void SaveYear(int year)
+        {
+            //
+            Console.WriteLine("Save Start");
+            string filename = String.Format("{0}lines\\tblPersonScore.csv", Program.CACHE_ROOT);
+            //         
+            using (StreamWriter sw = File.AppendText(filename))
+            {
+                foreach (int pID in people.Keys)
+                {
+                    ScorePersonData person = people[pID];
+                    if (year < person.startYear)
+                    {
+                        continue;
                     }
+                    double score = person.connectionCount[year].score;
+                    int ccnt = person.connectionCount[year].connection;
+                    int tri = person.connectionCount[year].triangle;
+                    sw.WriteLine("{0},{1},{2},{3},{4},{5}",
+                        ++tblPersonScoreID,
+                        pID,
+                        year,
+                        String.Format("{0:0.0000}", score).Replace(",", "."),
+                        ccnt,
+                        tri);
+
                 }
             }
             Console.WriteLine("Save Done");
-            return this;
         }
 
         public ScorePeople BulkImport()
@@ -413,7 +403,7 @@ namespace get_wikicfp2012.Score
         public ScorePeople SaveHIndex()
         {
             Console.WriteLine("Save Start");
-            SqlCommand command;                        
+            SqlCommand command;
             //people
             command = connection.CreateCommand();
             foreach (int pID in people.Keys)

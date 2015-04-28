@@ -9,6 +9,7 @@ namespace get_wikicfp2012.Score
     {
         public int connection;
         public int triangle;
+        public double score;
     }
 
     public class ScorePersonData
@@ -16,7 +17,6 @@ namespace get_wikicfp2012.Score
         public List<int> eventLinks = new List<int>();        
         public Dictionary<int, double> peopleLinkScore = new Dictionary<int, double>();
         public int triangleCount = 0;
-        public Dictionary<int, double> score = new Dictionary<int, double>();
         public Dictionary<int, ScorePersonCount> connectionCount = new Dictionary<int, ScorePersonCount>();        
         public int startYear;
         public int hIndex = -1;

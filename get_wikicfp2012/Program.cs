@@ -39,7 +39,7 @@ namespace get_wikicfp2012
 
             new ParserDBLP()
                 // parse DBLP 
-                .Parse(@"D:\work\phd\dblp3\dblp.xml") // Step1
+                //.Parse(@"D:\work\phd\dblp3\dblp.xml") // Step1
                 //.ParseConf(@"D:\work\phd\dblp3\dblp.xml")  // Step8
                 //.UpdateLinks() // Step9 
                 ;
@@ -183,7 +183,7 @@ namespace get_wikicfp2012
             */
 
             // calculate scores for people
-            /*
+            
             new ScorePeople()
                 // init
                 .Prepare() // Step B1a
@@ -192,7 +192,7 @@ namespace get_wikicfp2012
                 // calculate scores
                 .CalculateAll() // Step B1c
                 // save scores to file 
-                .SaveAll() // Step B1d
+                //.SaveAll() // Step B1d -- removed
                 // import scores from file
                 //.BulkImport() // Step B2
                 // TBC - calculate h index
@@ -202,7 +202,7 @@ namespace get_wikicfp2012
                 // close
                 .Close() // Step B1f
                 ;          
-             */
+            
              
            
             // calculate career lines (scores based on years since career start)
