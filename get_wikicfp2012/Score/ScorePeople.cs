@@ -251,7 +251,7 @@ namespace get_wikicfp2012.Score
                             int tri = (people[pIDl].connectionCount.ContainsKey(year - 1)) ? people[pIDl].connectionCount[year - 1].triangle : 0;
                             int ccnt = (people[pIDl].connectionCount.ContainsKey(year - 1)) ? people[pIDl].connectionCount[year - 1].connection : 0;
                             int tcnt = ccnt * (ccnt - 1) / 2;
-                            double transfer = (tcnt > 0) ? ((double)tri / tcnt) : 0;
+                            double transfer = (tcnt >= 5) ? ((double)tri / tcnt) : 0;
                             double weightedScore = 1.0 + (linkScore - 1.0) * transfer;
                             if (people[pID].peopleLinkScore.ContainsKey(pIDl))
                             {
