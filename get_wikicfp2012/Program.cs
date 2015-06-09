@@ -186,11 +186,11 @@ namespace get_wikicfp2012
             
             new ScorePeople()
                 // init
-                .Prepare() // Step B1a
+                //.Prepare() // Step B1a
                 // correlation test friendship transition probability based on year and number of connections
                 //.CalculateTranfers() // Step B1b -- removed
                 // calculate scores
-                .CalculateAll() // Step B1c
+                //.CalculateAll() // Step B1c
                 // save scores to file 
                 //.SaveAll() // Step B1d -- removed
                 // import scores from file
@@ -200,7 +200,7 @@ namespace get_wikicfp2012
                 // TBC - save h index
                 //.SaveHIndex()
                 // close
-                .Close() // Step B1f
+                //.Close() // Step B1f
                 ;          
             
              
@@ -233,8 +233,9 @@ namespace get_wikicfp2012
               
             //Google Scholar citation count test
             new GoogleScholar()
-                //.LoadWords()
-                //.GetAll(10000, 5)
+                //.LoadWords() // Step G1a
+                //.GetAll(10000, 5) // Step G1b
+                .GetNames() // Step G2
                 ;
 
             Console.WriteLine("END");
