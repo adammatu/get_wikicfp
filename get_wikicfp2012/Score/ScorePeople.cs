@@ -272,6 +272,7 @@ namespace get_wikicfp2012.Score
                                 }
                                 newScore += weightedScore;
                                 people[pID].peopleLinkScore.Add(pIDl, weightedScore);
+                                people[pIDl].peopleLinkScore.Add(pID, 0);
                             }
                         }
                     }
