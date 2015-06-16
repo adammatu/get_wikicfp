@@ -109,8 +109,9 @@ namespace get_wikicfp2012.Export
             Store(path, "tblConference", new string[] { "ID", "Name" }, Where("tblConference", limit));
             Store(path, "tblPerson", new string[] { "ID", "Name" }, Where("tblPerson", limit));            
             Store(path, "tblLink", new string[] { "ID", "Person_ID", "Event_ID" }, Where("tblLink", limit));
+            Store(path, "tblLinkReason", new string[] { "ID", "Link_ID", "Reason", "ReasonLink_ID" }, Where("tblLinkReason", limit));
             Store(path, "tblEvent", new string[] { "ID", "EventGroup_ID", "Name", "Type", "Key", "Url", "Conference_ID" }, Where("tblEvent", limit));
-            Store(path, "tblEventGroup", new string[] { "ID", "Name", "Type", "Date", "Url", "Conference_ID" }, Where("tblEventGroup", limit));
+            Store(path, "tblEventGroup", new string[] { "ID", "Name", "Type", "Date", "Url", "Conference_ID", "Group" }, Where("tblEventGroup", limit));            
             Store(path, "tblPersonOPI", new string[] { "ID", "Name", "OPI" }, Where("tblPersonOPI", limit));
             return this;
         }
@@ -130,6 +131,10 @@ namespace get_wikicfp2012.Export
                 case "tblLink":
                     {
                         return String.Format("where Person_ID in (select top {0} ID from tblPerson)", limit);
+                    }
+                case "tblLinkReason":
+                    {
+                        return String.Format("where Link_ID in (select ID from tblLink where Person_ID in (select top {0} ID from tblPerson))", limit);
                     }
                 case "tblEvent":
                     {
