@@ -5,6 +5,7 @@ using System.Text;
 using System.Data.SqlClient;
 using System.IO;
 using get_wikicfp2012.Stats;
+using System.Runtime.CompilerServices; 
 
 
 namespace get_wikicfp2012.ProbabilityGroups
@@ -88,16 +89,19 @@ namespace get_wikicfp2012.ProbabilityGroups
             return this;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private bool IsGroup(ConditionalEvent E2, ConditionalEvent E1)
         {
             return E1.Group == E2.Group;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private bool IsNotGroup(ConditionalEvent E2, ConditionalEvent E1)
         {
             return E1.Group != E2.Group;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private bool IsAnyGroup(ConditionalEvent E)
         {
             return E.Group >= 0;
@@ -107,12 +111,10 @@ namespace get_wikicfp2012.ProbabilityGroups
         {
             IntList eventspeopleE1 = eventspeople[E1.Event];
             IntList eventspeopleE2 = eventspeople[E2.Event];
-#if false // Code removed temporarily because works too slow
+#if true // Code removed temporarily because works too slow
             if (IsNotGroup(E2, E1) && IsAnyGroup(E2))
             {
-                bool l2f3 = false;
-                /*
-                string group = E2.GroupName.ToLower();
+                bool l2f3 = false;             
                 for (int i = 0; i < eventspeopleE1.Count; i++)
                 {
                     int friendID = eventspeopleE1[i];
@@ -120,17 +122,11 @@ namespace get_wikicfp2012.ProbabilityGroups
                     {
                         continue;
                     }
-                    List<ConditionalEvent> groupE3 = groupevents[group];
-                    foreach (ConditionalEvent E3 in groupE3)
+                    foreach (ConditionalEvent E3 in peopleevents[friendID])
                     {
-                        if (E3.Date < E2.Date)
+                        if ((IsGroup(E2, E3)) && (E3.Date < E2.Date))
                         {
-                            IntList eventspeopleE3 = eventspeople[E3.Event];
-                            if (!eventspeopleE3.Contains(friendID))
-                            {
-                                continue;
-                            }
-                            if (eventspeopleE3.Contains(pid))
+                            if (eventspeople[E3.Event].Contains(pid))
                             {
                                 continue;
                             }
@@ -141,35 +137,6 @@ namespace get_wikicfp2012.ProbabilityGroups
                             }
                             l2f3 = true;
                             break;
-                        }
-                    }
-                }
-                */
-                for (int i=0;i<eventspeopleE1.Count;i++)
-                {
-                    int friendID=eventspeopleE1[i];
-                    if (friendID == pid)
-                    {
-                        continue;
-                    }
-                    foreach (ConditionalEvent E3 in peopleevents[friendID])
-                    {
-                        if (IsGroup(E2, E3))
-                        {
-                            if (E3.Date < E2.Date)
-                            {
-                                if (eventspeople[E3.Event].Contains(pid))
-                                {
-                                    continue;
-                                }
-                                bool f2 = (eventspeopleE2.Contains(friendID));
-                                if (f2)
-                                {
-                                    return ConditionalReason.Link2Friend2Friend3;
-                                }
-                                l2f3 = true;
-                                break;
-                            }
                         }
                     }
                 }

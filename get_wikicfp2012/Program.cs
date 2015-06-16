@@ -158,21 +158,20 @@ namespace get_wikicfp2012
                 //.CalculateAll()
                 ;
 
-            //add groups using update_groups.sql before this step
-            /*
+            //add groups using update_groups.sql before this step            
             new ConditionalGroups()
                 // init
                 //.Open() // Step A1a
                 // read events from databae to file
                 //.ReadEvents() // Step A1b
                 // identify event reasons
-                //.IdentifyReasons() // Step A2
+                .IdentifyReasons() // Step A2
                 // collect reason stats and save
-                //.Collect() // Step A3
+                .Collect() // Step A3
                 // close
                 //.Close() // Step A1c
                 ;
-             */
+             
 
             /*
             // deprecated object score
@@ -235,7 +234,7 @@ namespace get_wikicfp2012
             new GoogleScholar()
                 //.LoadWords() // Step G1a
                 //.GetAll(10000, 5) // Step G1b
-                .GetNames() // Step G2
+                //.GetNames() // Step G2
                 ;
 
             Console.WriteLine("END");
