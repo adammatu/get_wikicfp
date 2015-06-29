@@ -93,6 +93,7 @@
     <Compile Include="ProbabilityGroups\ConditionalGroups.cs" />
     <Compile Include="ProbabilityGroups\ConditionalReason.cs" />
     <Compile Include="ProbabilityGroups\ConditionalResult.cs" />
+    <Compile Include="ProbabilityGroups\ConditionalResultSimple.cs" />
     <Compile Include="ProbabilityGroups\FileStorage2.cs" />
     <Compile Include="ProbabilityGroups\IntList.cs" />
     <Compile Include="Probability\ConditionalProbability.cs" />

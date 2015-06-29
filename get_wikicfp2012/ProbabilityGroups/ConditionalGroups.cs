@@ -282,6 +282,60 @@ namespace get_wikicfp2012.ProbabilityGroups
             return this;
         }
 
+        public ConditionalGroups CollectSimple()
+        {
+            ConditionalResultSimple result = new ConditionalResultSimple();
+            //
+            Console.WriteLine("Read Start");
+            SqlCommand command;
+            SqlDataReader dr;
+            //
+            command = connection.CreateCommand();
+            command = connection.CreateCommand();
+            command.CommandTimeout = 0;
+            command.CommandText = "select " +
+                "lr.ID as reasonID, "+
+                "lr.Link_ID as linkID, "+
+                "lr.Reason as reason, " +
+                "e.Type as type,eg.Date as date, " +
+                "e2.Type as type2,eg2.Date as date2, " +
+                "e.ID as id " +
+                "from tblLinkReason lr " +
+                "left join tblLink l on lr.ReasonLink_ID=l.ID " +
+                "left join tblEvent e on l.Event_ID=e.ID " +
+                "left join tblEventGroup eg on e.EventGroup_ID=eg.ID " +
+                "left join tblLink l2 on lr.Link_ID=l2.ID " +
+                "left join tblEvent e2 on l2.Event_ID=e2.ID " +
+                "left join tblEventGroup eg2 on e2.EventGroup_ID=eg2.ID ";
+            dr = command.ExecuteReader();
+            if (dr.HasRows)
+            {
+                while (dr.Read())
+                {
+                    if (dr["date"] == DBNull.Value)
+                    {
+                        continue;
+                    }
+
+                    result.Add(new ConditionalResultSimpleItem()
+                        {
+                            conf = Convert.ToInt32(dr["type2"]) > 20,
+                            linkID = Convert.ToInt32(dr["linkID"]),
+                            reason = Convert.ToInt32(dr["reason"]),
+                            reasonDate = Convert.ToDateTime(dr["date"]),
+                            reasonID = Convert.ToInt32(dr["reasonID"]),
+                            year = Convert.ToDateTime(dr["date2"]).Year
+                        }
+                        );
+                }
+            }
+            Console.WriteLine("Prepare");
+            result.Prepare();
+            Console.WriteLine("Save");
+            result.Save("allsim");
+            return this;
+        }
+
         public ConditionalGroups Collect()
         {
             Dictionary<int, int> eventReasonCount = new Dictionary<int, int>();

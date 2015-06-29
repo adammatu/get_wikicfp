@@ -139,13 +139,13 @@ namespace get_wikicfp2012
             // export dabatase data to csv
             new ExportCSV()
                 // init
-                .Open()
+                //.Open()
                 // store data sample with cunt limit (0 - no limit)
-                .Store(Program.CACHE_ROOT+"csv", 0)
+                //.Store(Program.CACHE_ROOT+"csv", 0)
                 // count committee size stats
                 //.CountCommitteeSizes()
                 // close
-                .Close()
+                //.Close()
                 ;
 
             //obsolete ???
@@ -161,15 +161,16 @@ namespace get_wikicfp2012
             //add groups using update_groups.sql before this step            
             new ConditionalGroups()
                 // init
-                //.Open() // Step A1a
+                .Open() // Step A1a
                 // read events from databae to file
                 //.ReadEvents() // Step A1b
                 // identify event reasons
                 //.IdentifyReasons() // Step A2
                 // collect reason stats and save
+                .CollectSimple() // Step A3
                 //.Collect() // Step A3
                 // close
-                //.Close() // Step A1c
+                .Close() // Step A1c
                 ;
              
 
